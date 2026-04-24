@@ -560,6 +560,163 @@
   .busking-view.open ~ .fab { display: block; }
   .fab:active { transform: scale(0.92); }
 
+  /* FAB spécifique emprunts */
+  #empFab { display: none; background: var(--emprunt); box-shadow: 0 8px 24px rgba(157, 186, 196, 0.35); }
+  #empruntsView.open ~ #empFab { display: block; }
+  /* Cacher le fab busking quand on est sur emprunts et inversement */
+  #empruntsView.open ~ #fab { display: none; }
+
+  /* Résumé dettes sur écran principal */
+  .dettes-summary {
+    margin-bottom: 28px;
+    border: 1px solid rgba(157, 186, 196, 0.25);
+    border-radius: 4px;
+    padding: 14px 16px;
+    background: linear-gradient(135deg, rgba(157, 186, 196, 0.06), rgba(157, 186, 196, 0.02));
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .dettes-summary:active { transform: scale(0.99); }
+  .dettes-summary .title {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    color: var(--emprunt);
+    font-size: 14px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .dettes-summary .title .chev {
+    font-size: 11px; opacity: 0.6;
+  }
+  .dettes-summary .line {
+    display: flex; justify-content: space-between;
+    padding: 4px 0;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 15px;
+    color: var(--ink);
+  }
+  .dettes-summary .line .name { font-style: italic; }
+  .dettes-summary .line.owed .amt { color: var(--plus); font-weight: 500; }
+  .dettes-summary .line.owes .amt { color: var(--minus); font-weight: 500; }
+
+  /* Vue Emprunts - personnes */
+  .person-card {
+    margin: 16px 14px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    overflow: hidden;
+    background: var(--card);
+  }
+  .person-card.owed { border-color: rgba(157, 196, 160, 0.3); }
+  .person-card.owes { border-color: rgba(212, 144, 144, 0.3); }
+  .person-card.settled { border-color: var(--line); opacity: 0.7; }
+  .person-header {
+    padding: 16px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+  }
+  .person-header .left { flex: 1; min-width: 0; }
+  .person-header .name {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 500;
+    font-size: 22px;
+    color: var(--ink);
+  }
+  .person-header .status {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-top: 3px;
+    font-family: 'Jost', sans-serif;
+  }
+  .person-card.owed .person-header .status { color: var(--plus); }
+  .person-card.owes .person-header .status { color: var(--minus); }
+  .person-card.settled .person-header .status { color: var(--ink-dim); }
+  .person-header .balance {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .person-card.owed .balance { color: var(--plus); }
+  .person-card.owes .balance { color: var(--minus); }
+  .person-card.settled .balance { color: var(--ink-dim); }
+  .person-header .chevron {
+    color: var(--ink-dim);
+    transition: transform 0.25s;
+    margin-left: 4px; font-size: 11px;
+  }
+  .person-card.expanded .chevron { transform: rotate(180deg); }
+
+  .person-body {
+    display: none;
+    border-top: 1px solid var(--line);
+    padding: 4px 0;
+  }
+  .person-card.expanded .person-body { display: block; }
+
+  .person-entry {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 18px;
+    gap: 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  .person-entry:last-child { border-bottom: none; }
+  .person-entry .info { flex: 1; min-width: 0; }
+  .person-entry .date-line {
+    font-size: 11px;
+    color: var(--ink-dim);
+    letter-spacing: 0.08em;
+  }
+  .person-entry .dir-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 14px;
+    color: var(--ink);
+    margin-top: 2px;
+  }
+  .person-entry .amt {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .person-entry .amt.pos { color: var(--plus); }
+  .person-entry .amt.neg { color: var(--minus); }
+  .person-entry .del {
+    background: none; border: none; color: var(--ink-dim);
+    opacity: 0.4; font-size: 15px; cursor: pointer; padding: 4px 6px;
+  }
+
+  .emprunts-sections {
+    padding: 8px 0 20px;
+  }
+  .emprunts-section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    color: var(--gold-dim);
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    margin: 16px 22px 4px;
+  }
+  .emprunts-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--ink-dim);
+    font-style: italic;
+    font-family: 'Cormorant Garamond', serif;
+  }
+
   .busking-form-grid {
     display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px;
   }
@@ -623,8 +780,10 @@
   <div class="actions">
     <button class="btn plus" onclick="openOp('plus')"><span class="sign">+</span>Rentrée</button>
     <button class="btn minus" onclick="openOp('minus')"><span class="sign">−</span>Sortie</button>
-    <button class="btn emp" onclick="openOp('emp')"><span class="sign">⇄</span>Emprunt</button>
+    <button class="btn emp" onclick="openEmprunts()"><span class="sign">⇄</span>Emprunt</button>
   </div>
+
+  <div id="dettesSummary" class="dettes-summary" style="display:none"></div>
 
   <div class="section-divider"><span>Spécial</span></div>
 
@@ -685,6 +844,18 @@
 </div>
 
 <button class="fab" id="fab" onclick="openBuskingForm()">+</button>
+
+<!-- EMPRUNTS VIEW -->
+<div class="busking-view" id="empruntsView">
+  <div class="busking-header">
+    <button class="back" onclick="closeEmprunts()">←</button>
+    <h2>Emprunts</h2>
+    <span style="width:34px"></span>
+  </div>
+  <div class="scroll-wrap" id="empruntsWrap"></div>
+</div>
+
+<button class="fab" id="empFab" onclick="openOp('emp')">+</button>
 
 <!-- BUSKING FORM -->
 <div class="modal" id="buskingModal">
@@ -1144,6 +1315,8 @@
     document.getElementById('totalDisplay').innerHTML =
       `${intP}<span class="cents">,${dec}</span><span class="cur">€</span>`;
 
+    renderDettesSummary();
+
     const list = document.getElementById('entriesList');
     if (entries.length === 0) {
       list.innerHTML = '<div class="empty">Aucune opération pour le moment</div>';
@@ -1174,6 +1347,188 @@
         </div>
       `;
     }).join('');
+  }
+
+  // ============ DETTES — calculs par personne ============
+  // Calcule le solde net pour chaque personne
+  // Solde positif = la personne te doit de l'argent
+  // Solde négatif = tu dois à la personne
+  function computeDettes() {
+    const balances = {}; // { nom: { balance: X, entries: [...] } }
+
+    entries.forEach(e => {
+      if (e.kind !== 'emp') return;
+      const name = (e.note || '').trim() || '(sans nom)';
+      if (!balances[name]) balances[name] = { balance: 0, entries: [] };
+
+      // prete      : tu donnes → on te doit → +montant au solde
+      // rembourse-moi : on te rend → −montant du solde (la dette diminue)
+      // emprunte   : tu reçois → tu dois → −montant au solde
+      // rembourse  : tu rends → +montant au solde (ta dette diminue)
+      let delta = 0;
+      if (e.empDir === 'prete') delta = Math.abs(e.amount);
+      else if (e.empDir === 'rembourse-moi') delta = -Math.abs(e.amount);
+      else if (e.empDir === 'emprunte') delta = -Math.abs(e.amount);
+      else if (e.empDir === 'rembourse') delta = Math.abs(e.amount);
+
+      balances[name].balance += delta;
+      balances[name].entries.push(e);
+    });
+
+    return balances;
+  }
+
+  function renderDettesSummary() {
+    const summary = document.getElementById('dettesSummary');
+    const balances = computeDettes();
+
+    // Only show non-settled balances
+    const active = Object.entries(balances).filter(([n, d]) => Math.abs(d.balance) > 0.005);
+
+    if (active.length === 0) {
+      summary.style.display = 'none';
+      return;
+    }
+
+    // Sort: biggest absolute amount first
+    active.sort((a, b) => Math.abs(b[1].balance) - Math.abs(a[1].balance));
+
+    const lines = active.slice(0, 4).map(([name, data]) => {
+      const b = data.balance;
+      if (b > 0) {
+        return `<div class="line owed"><span class="name">${escapeHtml(name)} te doit</span><span class="amt">${formatMoney(b)} €</span></div>`;
+      } else {
+        return `<div class="line owes"><span class="name">Tu dois à ${escapeHtml(name)}</span><span class="amt">${formatMoney(Math.abs(b))} €</span></div>`;
+      }
+    }).join('');
+
+    const more = active.length > 4 ? `<div class="line" style="opacity:0.5;font-size:13px">et ${active.length - 4} autre${active.length - 4 > 1 ? 's' : ''}…</div>` : '';
+
+    summary.style.display = 'block';
+    summary.innerHTML = `
+      <div class="title">
+        <span>⇄ Emprunts en cours</span>
+        <span class="chev">Voir tout →</span>
+      </div>
+      ${lines}
+      ${more}
+    `;
+    summary.onclick = openEmprunts;
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+  }
+
+  // ============ VUE EMPRUNTS ============
+  function openEmprunts() {
+    document.getElementById('empruntsView').classList.add('open');
+    document.getElementById('empFab').style.display = 'block';
+    renderEmprunts();
+  }
+
+  function closeEmprunts() {
+    document.getElementById('empruntsView').classList.remove('open');
+    document.getElementById('empFab').style.display = 'none';
+  }
+
+  function renderEmprunts() {
+    const wrap = document.getElementById('empruntsWrap');
+    const balances = computeDettes();
+
+    if (Object.keys(balances).length === 0) {
+      wrap.innerHTML = `<div class="emprunts-empty">
+        Aucun emprunt enregistré.<br>
+        Appuie sur + pour ajouter.
+      </div>`;
+      return;
+    }
+
+    // Séparer en 3 groupes
+    const owed = [];    // on te doit
+    const owes = [];    // tu dois
+    const settled = []; // soldés
+
+    Object.entries(balances).forEach(([name, data]) => {
+      const b = data.balance;
+      if (b > 0.005) owed.push({ name, ...data });
+      else if (b < -0.005) owes.push({ name, ...data });
+      else settled.push({ name, ...data });
+    });
+
+    // Tri par montant décroissant
+    owed.sort((a, b) => b.balance - a.balance);
+    owes.sort((a, b) => a.balance - b.balance);
+
+    const renderPerson = (p, type) => {
+      const b = p.balance;
+      const absB = Math.abs(b);
+      const status = type === 'owed' ? `te doit` : type === 'owes' ? `tu dois` : 'soldé';
+      const sortedEntries = [...p.entries].sort((a, b) => {
+        if (a.date !== b.date) return b.date.localeCompare(a.date);
+        return b.id - a.id;
+      });
+
+      const entriesHtml = sortedEntries.map(e => {
+        const labels = {
+          'prete': 'Tu as prêté',
+          'rembourse-moi': 'Remboursement reçu',
+          'emprunte': 'Tu as emprunté',
+          'rembourse': 'Tu as remboursé'
+        };
+        const isPositive = e.empDir === 'prete' || e.empDir === 'rembourse-moi';
+        // Du point de vue de la dette : prete = +, rembourse-moi = −, emprunte = −, rembourse = +
+        // Pour l'affichage, on montre le sens de l'argent
+        const amtClass = (e.empDir === 'prete' || e.empDir === 'rembourse') ? 'neg' : 'pos';
+        const sign = (e.empDir === 'prete' || e.empDir === 'rembourse') ? '−' : '+';
+        return `
+          <div class="person-entry">
+            <div class="info">
+              <div class="date-line">${formatDate(e.date)}</div>
+              <div class="dir-label">${labels[e.empDir] || 'Mouvement'}</div>
+            </div>
+            <div class="amt ${amtClass}">${sign}${formatMoney(Math.abs(e.amount))} €</div>
+            <button class="del" onclick="deleteEntry(${e.id}); event.stopPropagation();">×</button>
+          </div>
+        `;
+      }).join('');
+
+      return `
+        <div class="person-card ${type}" data-person="${escapeHtml(p.name)}">
+          <div class="person-header" onclick="togglePerson('${escapeHtml(p.name).replace(/'/g, "\\'")}')">
+            <div class="left">
+              <div class="name">${escapeHtml(p.name)}</div>
+              <div class="status">${type === 'settled' ? 'Soldé' : status}</div>
+            </div>
+            <div class="balance">${type === 'settled' ? '0,00' : formatMoney(absB)} €</div>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="person-body">${entriesHtml}</div>
+        </div>
+      `;
+    };
+
+    let html = '';
+
+    if (owed.length) {
+      html += `<div class="emprunts-section-title">On te doit</div>`;
+      html += owed.map(p => renderPerson(p, 'owed')).join('');
+    }
+    if (owes.length) {
+      html += `<div class="emprunts-section-title">Tu dois</div>`;
+      html += owes.map(p => renderPerson(p, 'owes')).join('');
+    }
+    if (settled.length) {
+      html += `<div class="emprunts-section-title">Soldés</div>`;
+      html += settled.map(p => renderPerson(p, 'settled')).join('');
+    }
+
+    wrap.innerHTML = `<div class="emprunts-sections">${html}</div>`;
+  }
+
+  function togglePerson(name) {
+    const card = document.querySelector(`.person-card[data-person="${CSS.escape(name)}"]`);
+    if (card) card.classList.toggle('expanded');
   }
 
   // ============ OP ============
@@ -1248,6 +1603,9 @@
     entries.push(entry);
     saveEntries();
     render();
+    if (document.getElementById('empruntsView').classList.contains('open')) {
+      renderEmprunts();
+    }
     closeOp();
   }
 
@@ -1256,6 +1614,9 @@
     entries = entries.filter(e => e.id !== id);
     saveEntries();
     render();
+    if (document.getElementById('empruntsView').classList.contains('open')) {
+      renderEmprunts();
+    }
   }
 
   // ============ BUSKING ============
