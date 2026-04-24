@@ -301,6 +301,7 @@
   }
   .entry.plus .amt { color: var(--plus); }
   .entry.minus .amt { color: var(--minus); }
+  .entry.emp-neutral .amt { color: var(--emprunt); font-style: italic; font-size: 17px; }
   .entry .del {
     background: none; border: none; color: var(--ink-dim);
     opacity: 0.4; font-size: 18px; cursor: pointer; padding: 4px 8px;
@@ -703,6 +704,7 @@
   }
   .person-entry .amt.pos { color: var(--plus); }
   .person-entry .amt.neg { color: var(--minus); }
+  .person-entry .amt.neutral { color: var(--emprunt); font-style: italic; }
   .person-entry .del {
     background: none; border: none; color: var(--ink-dim);
     opacity: 0.4; font-size: 15px; cursor: pointer; padding: 4px 6px;
@@ -829,7 +831,7 @@
         <span class="sym">← +</span>On me rembourse
       </button>
       <button data-dir="emprunte" onclick="setEmpDir('emprunte')">
-        <span class="sym">← +</span>J'emprunte
+        <span class="sym">⊙</span>Je dois
       </button>
       <button data-dir="rembourse" onclick="setEmpDir('rembourse')">
         <span class="sym">→ −</span>Je rembourse
@@ -1376,16 +1378,28 @@
       return b.id - a.id;
     });
     list.innerHTML = sorted.slice(0, 40).map(e => {
-      const cls = e.amount >= 0 ? 'plus' : 'minus';
-      const sign = e.amount >= 0 ? '+' : '−';
+      // Cas spécial: "je dois" (amount=0, trackedAmount défini)
+      const isJeDois = e.kind === 'emp' && e.empDir === 'emprunte';
+      const displayAmount = isJeDois ? (e.trackedAmount || 0) : e.amount;
+
+      let cls, sign;
+      if (isJeDois) { cls = 'emp-neutral'; sign = ''; }
+      else if (e.amount >= 0) { cls = 'plus'; sign = '+'; }
+      else { cls = 'minus'; sign = '−'; }
+
       const tag = e.kind === 'emp' ? '<span class="tag">Emprunt</span>' : '';
       const defaultNote = e.kind === 'emp'
         ? (e.empDir === 'prete' ? 'Prêt'
            : e.empDir === 'rembourse-moi' ? 'Remboursement reçu'
-           : e.empDir === 'emprunte' ? 'Emprunt'
+           : e.empDir === 'emprunte' ? 'Je dois'
            : 'Remboursement')
         : (e.amount >= 0 ? 'Rentrée' : 'Sortie');
-      const amtDisplay = isHidden ? '••• €' : `${sign}${formatMoney(Math.abs(e.amount))} €`;
+
+      let amtDisplay;
+      if (isHidden) amtDisplay = '••• €';
+      else if (isJeDois) amtDisplay = `(${formatMoney(Math.abs(displayAmount))} €)`;
+      else amtDisplay = `${sign}${formatMoney(Math.abs(displayAmount))} €`;
+
       return `
         <div class="entry ${cls}">
           <div class="left">
@@ -1411,15 +1425,20 @@
       const name = (e.note || '').trim() || '(sans nom)';
       if (!balances[name]) balances[name] = { balance: 0, entries: [] };
 
+      // Pour "je dois" (emprunte), amount=0 mais trackedAmount contient le vrai montant
+      const realAmount = (e.empDir === 'emprunte' && typeof e.trackedAmount === 'number')
+        ? e.trackedAmount
+        : Math.abs(e.amount);
+
       // prete      : tu donnes → on te doit → +montant au solde
       // rembourse-moi : on te rend → −montant du solde (la dette diminue)
-      // emprunte   : tu reçois → tu dois → −montant au solde
+      // emprunte   : tu dois → −montant au solde (ta dette augmente)
       // rembourse  : tu rends → +montant au solde (ta dette diminue)
       let delta = 0;
-      if (e.empDir === 'prete') delta = Math.abs(e.amount);
-      else if (e.empDir === 'rembourse-moi') delta = -Math.abs(e.amount);
-      else if (e.empDir === 'emprunte') delta = -Math.abs(e.amount);
-      else if (e.empDir === 'rembourse') delta = Math.abs(e.amount);
+      if (e.empDir === 'prete') delta = realAmount;
+      else if (e.empDir === 'rembourse-moi') delta = -realAmount;
+      else if (e.empDir === 'emprunte') delta = -realAmount;
+      else if (e.empDir === 'rembourse') delta = realAmount;
 
       balances[name].balance += delta;
       balances[name].entries.push(e);
@@ -1527,21 +1546,27 @@
         const labels = {
           'prete': 'Tu as prêté',
           'rembourse-moi': 'Remboursement reçu',
-          'emprunte': 'Tu as emprunté',
+          'emprunte': 'Tu dois',
           'rembourse': 'Tu as remboursé'
         };
-        const isPositive = e.empDir === 'prete' || e.empDir === 'rembourse-moi';
-        // Du point de vue de la dette : prete = +, rembourse-moi = −, emprunte = −, rembourse = +
-        // Pour l'affichage, on montre le sens de l'argent
-        const amtClass = (e.empDir === 'prete' || e.empDir === 'rembourse') ? 'neg' : 'pos';
-        const sign = (e.empDir === 'prete' || e.empDir === 'rembourse') ? '−' : '+';
+        // Montant réel : pour "je dois", c'est trackedAmount
+        const realAmt = (e.empDir === 'emprunte' && typeof e.trackedAmount === 'number')
+          ? e.trackedAmount
+          : Math.abs(e.amount);
+        // Affichage : "je dois" est neutre (aide-mémoire)
+        const amtClass = e.empDir === 'emprunte' ? 'neutral'
+                        : (e.empDir === 'prete' || e.empDir === 'rembourse') ? 'neg'
+                        : 'pos';
+        const sign = e.empDir === 'emprunte' ? ''
+                    : (e.empDir === 'prete' || e.empDir === 'rembourse') ? '−'
+                    : '+';
         return `
           <div class="person-entry">
             <div class="info">
               <div class="date-line">${formatDate(e.date)}</div>
               <div class="dir-label">${labels[e.empDir] || 'Mouvement'}</div>
             </div>
-            <div class="amt ${amtClass}">${sign}${formatMoney(Math.abs(e.amount))} €</div>
+            <div class="amt ${amtClass}">${sign}${formatMoney(realAmt)} €</div>
             <button class="del" onclick="deleteEntry(${e.id}); event.stopPropagation();">×</button>
           </div>
         `;
@@ -1641,12 +1666,24 @@
 
     let entry;
     if (currentOp === 'emp') {
-      const isOutgoing = empDir === 'prete' || empDir === 'rembourse';
-      entry = {
-        id: Date.now(),
-        amount: isOutgoing ? -amt : amt,
-        note: note, date: date, kind: 'emp', empDir: empDir
-      };
+      if (empDir === 'emprunte') {
+        // "Je dois" : aide-mémoire, ne bouge pas le total
+        // On stocke amount=0 pour le total, et trackedAmount pour les dettes
+        entry = {
+          id: Date.now(),
+          amount: 0,
+          trackedAmount: amt,
+          note: note, date: date, kind: 'emp', empDir: empDir
+        };
+      } else {
+        // Je prête / On me rembourse / Je rembourse : vrais mouvements d'argent
+        const isOutgoing = empDir === 'prete' || empDir === 'rembourse';
+        entry = {
+          id: Date.now(),
+          amount: isOutgoing ? -amt : amt,
+          note: note, date: date, kind: 'emp', empDir: empDir
+        };
+      }
     } else {
       entry = {
         id: Date.now(),
