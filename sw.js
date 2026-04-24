@@ -1,5 +1,5 @@
 // Service worker — cache-first pour fonctionnement hors-ligne
-const CACHE = 'comptes-akasha-v1';
+const CACHE = 'comptes-akasha-v2';
 const FILES = [
   './',
   './index.html',
