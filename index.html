@@ -1,0 +1,1556 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Comptes">
+<meta name="theme-color" content="#0a0612">
+<title>Comptes · Âkasha</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --bg: #0a0612;
+    --bg-2: #140a22;
+    --ink: #f4ecd8;
+    --ink-dim: #b8a888;
+    --gold: #d4a857;
+    --gold-dim: #8a6d3a;
+    --plus: #9dc4a0;
+    --minus: #d49090;
+    --emprunt: #9dbac4;
+    --line: rgba(244, 236, 216, 0.12);
+    --card: rgba(244, 236, 216, 0.04);
+  }
+
+  html, body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Jost', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body {
+    background:
+      radial-gradient(ellipse at top, rgba(212, 168, 87, 0.08), transparent 60%),
+      radial-gradient(ellipse at bottom, rgba(157, 196, 160, 0.04), transparent 50%),
+      var(--bg);
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.4;
+    z-index: 1;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.08 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .app { position: relative; z-index: 2; padding: 24px 20px 40px; max-width: 560px; margin: 0 auto; display: none; }
+  .app.open { display: block; }
+
+  /* LOCK */
+  .lock {
+    position: fixed; inset: 0; z-index: 500;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 40px 20px; background: var(--bg);
+  }
+  .lock.hidden { display: none; }
+  .lock .mark {
+    font-family: 'Cormorant Garamond', serif; font-style: italic; color: var(--gold);
+    font-size: 13px; letter-spacing: 0.3em; text-transform: uppercase;
+    margin-bottom: 8px; opacity: 0.7;
+  }
+  .lock h1 {
+    font-family: 'Cormorant Garamond', serif; font-weight: 500;
+    font-size: 40px; margin-bottom: 8px;
+  }
+  .lock .ornament { color: var(--gold-dim); letter-spacing: 1em; margin-bottom: 40px; }
+  .lock .prompt {
+    font-family: 'Cormorant Garamond', serif; font-style: italic;
+    color: var(--ink-dim); font-size: 17px; margin-bottom: 28px;
+    text-align: center; max-width: 320px;
+  }
+
+  /* Biometric prompt */
+  .bio-screen {
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .bio-screen.hidden { display: none; }
+  .fingerprint {
+    width: 110px; height: 110px;
+    border-radius: 50%;
+    border: 2px solid var(--gold-dim);
+    background: rgba(212, 168, 87, 0.05);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 28px;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+  }
+  .fingerprint:active { transform: scale(0.95); background: rgba(212, 168, 87, 0.15); }
+  .fingerprint svg { width: 58px; height: 58px; fill: var(--gold); }
+  .fingerprint.pulse::after {
+    content: '';
+    position: absolute; inset: -8px;
+    border-radius: 50%;
+    border: 2px solid var(--gold);
+    animation: pulse 1.5s ease-out infinite;
+  }
+  @keyframes pulse {
+    0% { transform: scale(1); opacity: 0.6; }
+    100% { transform: scale(1.25); opacity: 0; }
+  }
+  .fingerprint-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic; color: var(--ink); font-size: 18px;
+    margin-bottom: 32px;
+  }
+  .link-btn {
+    background: none; border: none;
+    font-family: 'Cormorant Garamond', serif; font-style: italic;
+    color: var(--ink-dim); font-size: 15px; cursor: pointer;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  .link-btn:active { color: var(--gold); }
+
+  /* PIN screen */
+  .pin-screen { display: flex; flex-direction: column; align-items: center; }
+  .pin-screen.hidden { display: none; }
+  .pin-dots {
+    display: flex; gap: 16px; margin-bottom: 36px; height: 18px; align-items: center;
+  }
+  .pin-dot {
+    width: 14px; height: 14px; border-radius: 50%;
+    border: 1px solid var(--gold-dim); transition: all 0.15s;
+  }
+  .pin-dot.filled {
+    background: var(--gold); border-color: var(--gold); transform: scale(1.1);
+  }
+  .pin-dots.shake { animation: shake 0.4s; }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+  }
+  .keypad {
+    display: grid; grid-template-columns: repeat(3, 72px); gap: 14px; justify-content: center;
+  }
+  .key {
+    width: 72px; height: 72px; border-radius: 50%;
+    border: 1px solid var(--line); background: var(--card);
+    color: var(--ink); font-family: 'Cormorant Garamond', serif; font-size: 28px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .key:active { background: rgba(212, 168, 87, 0.15); transform: scale(0.93); }
+  .key.empty { visibility: hidden; }
+  .key.back { font-size: 22px; color: var(--ink-dim); }
+  .lock-msg {
+    color: var(--minus); font-style: italic; font-family: 'Cormorant Garamond', serif;
+    margin-top: 18px; height: 20px; font-size: 15px;
+  }
+  .switch-auth {
+    margin-top: 24px;
+    background: none; border: none;
+    font-family: 'Cormorant Garamond', serif; font-style: italic;
+    color: var(--ink-dim); font-size: 14px; cursor: pointer;
+    padding: 8px 14px; opacity: 0.7;
+  }
+
+  /* HEADER */
+  header { text-align: center; padding: 20px 0 32px; position: relative; }
+  header .mark {
+    font-family: 'Cormorant Garamond', serif; font-style: italic; color: var(--gold);
+    font-size: 13px; letter-spacing: 0.3em; text-transform: uppercase; opacity: 0.7;
+  }
+  header h1 {
+    font-family: 'Cormorant Garamond', serif; font-weight: 500;
+    font-size: 38px; letter-spacing: 0.02em; margin-top: 6px;
+  }
+  header .ornament {
+    color: var(--gold-dim); font-size: 18px; margin-top: 8px; letter-spacing: 1em;
+  }
+  .lock-btn {
+    position: absolute; top: 20px; right: 0;
+    background: none; border: none; color: var(--ink-dim);
+    font-size: 22px; cursor: pointer; opacity: 0.6; padding: 6px;
+  }
+  .settings-gear {
+    position: absolute; top: 20px; left: 0;
+    background: none; border: none; color: var(--ink-dim);
+    font-size: 20px; cursor: pointer; opacity: 0.6; padding: 6px;
+  }
+
+  /* TOTAL */
+  .total {
+    text-align: center; padding: 36px 20px; margin-bottom: 28px;
+    border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+    background: linear-gradient(180deg, transparent, rgba(212, 168, 87, 0.03), transparent);
+  }
+  .total .label {
+    font-family: 'Cormorant Garamond', serif; font-style: italic; color: var(--ink-dim);
+    font-size: 14px; letter-spacing: 0.25em; text-transform: uppercase; margin-bottom: 12px;
+  }
+  .total .amount {
+    font-family: 'Cormorant Garamond', serif; font-weight: 500;
+    font-size: 56px; color: var(--ink); line-height: 1;
+  }
+  .total .amount .cents { font-size: 26px; color: var(--ink-dim); margin-left: 2px; }
+  .total .amount .cur { color: var(--gold); margin-left: 6px; font-weight: 400; }
+
+  /* ACTIONS */
+  .actions {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 32px;
+  }
+  .btn {
+    border: 1px solid var(--line); background: var(--card); color: var(--ink);
+    padding: 16px 10px; font-family: 'Cormorant Garamond', serif;
+    font-size: 17px; font-style: italic; cursor: pointer;
+    transition: all 0.3s ease; display: flex; flex-direction: column;
+    align-items: center; gap: 6px; border-radius: 2px;
+  }
+  .btn:active { transform: scale(0.96); }
+  .btn .sign { font-size: 24px; font-style: normal; font-family: 'Jost', sans-serif; font-weight: 300; }
+  .btn.plus { border-color: rgba(157, 196, 160, 0.3); }
+  .btn.plus .sign { color: var(--plus); }
+  .btn.minus { border-color: rgba(212, 144, 144, 0.3); }
+  .btn.minus .sign { color: var(--minus); }
+  .btn.emp { border-color: rgba(157, 186, 196, 0.3); }
+  .btn.emp .sign { color: var(--emprunt); font-size: 18px; }
+
+  /* DIVIDER */
+  .section-divider {
+    display: flex; align-items: center; gap: 14px; margin: 32px 0 18px; color: var(--gold-dim);
+  }
+  .section-divider::before, .section-divider::after {
+    content: ''; flex: 1; height: 1px; background: var(--line);
+  }
+  .section-divider span {
+    font-family: 'Cormorant Garamond', serif; font-style: italic;
+    letter-spacing: 0.2em; text-transform: uppercase; font-size: 12px;
+  }
+
+  .busking-btn {
+    width: 100%; padding: 18px;
+    background: linear-gradient(135deg, rgba(212, 168, 87, 0.08), rgba(157, 196, 160, 0.05));
+    border: 1px solid rgba(212, 168, 87, 0.25); color: var(--gold);
+    font-family: 'Cormorant Garamond', serif; font-style: italic;
+    font-size: 22px; cursor: pointer; border-radius: 2px;
+    letter-spacing: 0.05em; transition: all 0.3s;
+  }
+  .busking-btn:active { transform: scale(0.98); }
+  .busking-btn small {
+    display: block; font-size: 11px; color: var(--ink-dim);
+    letter-spacing: 0.2em; text-transform: uppercase;
+    font-style: normal; margin-top: 4px; font-family: 'Jost', sans-serif;
+  }
+
+  /* REGISTRE */
+  .registre { margin-top: 28px; }
+  .registre h2 {
+    font-family: 'Cormorant Garamond', serif; font-weight: 500; font-size: 22px;
+    color: var(--ink-dim); margin-bottom: 14px; font-style: italic;
+  }
+  .entry {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 0; border-bottom: 1px solid var(--line); gap: 12px;
+  }
+  .entry:last-child { border-bottom: none; }
+  .entry .left { flex: 1; min-width: 0; }
+  .entry .date { font-size: 12px; color: var(--ink-dim); letter-spacing: 0.08em; }
+  .entry .note {
+    font-family: 'Cormorant Garamond', serif; font-style: italic;
+    font-size: 15px; color: var(--ink); margin-top: 2px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .entry .tag {
+    display: inline-block; font-family: 'Jost', sans-serif; font-size: 9px;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    padding: 2px 6px; border-radius: 2px; margin-right: 6px;
+    vertical-align: middle; opacity: 0.75;
+    background: rgba(157, 186, 196, 0.15); color: var(--emprunt);
+  }
+  .entry .amt {
+    font-family: 'Cormorant Garamond', serif; font-size: 20px;
+    font-weight: 500; white-space: nowrap;
+  }
+  .entry.plus .amt { color: var(--plus); }
+  .entry.minus .amt { color: var(--minus); }
+  .entry .del {
+    background: none; border: none; color: var(--ink-dim);
+    opacity: 0.4; font-size: 18px; cursor: pointer; padding: 4px 8px;
+  }
+  .entry .del:active { opacity: 1; }
+
+  .empty {
+    text-align: center; color: var(--ink-dim); font-style: italic;
+    font-family: 'Cormorant Garamond', serif; padding: 30px 0; opacity: 0.5;
+  }
+
+  /* MODALS */
+  .modal {
+    position: fixed; inset: 0;
+    background: rgba(10, 6, 18, 0.85);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    z-index: 100; display: none;
+    align-items: flex-end; justify-content: center;
+    animation: fade 0.25s ease;
+  }
+  .modal.open { display: flex; }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+
+  .modal-content {
+    background: var(--bg-2); border-top: 1px solid var(--line);
+    width: 100%; max-width: 560px; max-height: 92vh;
+    overflow-y: auto;
+    padding: 28px 22px calc(28px + env(safe-area-inset-bottom));
+    border-radius: 18px 18px 0 0;
+    animation: slide 0.3s ease; position: relative;
+  }
+  @keyframes slide { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+  .modal-content h3 {
+    font-family: 'Cormorant Garamond', serif; font-weight: 500;
+    font-size: 26px; margin-bottom: 20px; color: var(--gold);
+    text-align: center; font-style: italic;
+  }
+  .modal-content .sub {
+    text-align: center; color: var(--ink-dim);
+    font-family: 'Cormorant Garamond', serif; font-style: italic;
+    margin-top: -14px; margin-bottom: 18px; font-size: 14px;
+  }
+
+  .close-x {
+    position: absolute; top: 14px; right: 14px;
+    background: none; border: none; color: var(--ink-dim);
+    font-size: 28px; cursor: pointer; padding: 4px 10px; line-height: 1;
+  }
+
+  label {
+    display: block; font-size: 11px; color: var(--ink-dim);
+    letter-spacing: 0.2em; text-transform: uppercase;
+    margin-bottom: 6px; margin-top: 14px;
+  }
+  label:first-of-type { margin-top: 0; }
+
+  input, textarea {
+    width: 100%; background: rgba(244, 236, 216, 0.05);
+    border: 1px solid var(--line); color: var(--ink);
+    padding: 12px 14px; font-family: 'Jost', sans-serif;
+    font-size: 17px; border-radius: 2px; outline: none;
+    transition: border-color 0.2s; font-weight: 300;
+  }
+  input:focus, textarea:focus { border-color: var(--gold-dim); }
+  input[type="number"] { font-family: 'Cormorant Garamond', serif; font-size: 22px; }
+  input[type="date"] { color-scheme: dark; }
+
+  .validate {
+    width: 100%; margin-top: 22px; padding: 16px;
+    background: var(--gold); color: var(--bg); border: none;
+    font-family: 'Cormorant Garamond', serif; font-style: italic;
+    font-size: 19px; cursor: pointer; border-radius: 2px;
+    letter-spacing: 0.05em; font-weight: 500;
+  }
+  .validate:active { transform: scale(0.98); }
+  .validate.secondary {
+    background: transparent; color: var(--ink-dim);
+    border: 1px solid var(--line); margin-top: 10px;
+  }
+
+  /* Settings menu */
+  .settings-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 0; border-bottom: 1px solid var(--line);
+  }
+  .settings-row:last-child { border-bottom: none; }
+  .settings-row .lbl {
+    font-family: 'Cormorant Garamond', serif; font-style: italic;
+    font-size: 17px; color: var(--ink);
+  }
+  .settings-row .sub-lbl {
+    font-size: 11px; color: var(--ink-dim); letter-spacing: 0.08em;
+    margin-top: 2px;
+  }
+  .toggle {
+    width: 48px; height: 28px; border-radius: 14px;
+    background: var(--line); border: none; cursor: pointer;
+    position: relative; transition: background 0.2s;
+  }
+  .toggle::after {
+    content: ''; position: absolute;
+    top: 3px; left: 3px;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--ink-dim); transition: all 0.2s;
+  }
+  .toggle.on { background: rgba(212, 168, 87, 0.3); }
+  .toggle.on::after { left: 23px; background: var(--gold); }
+
+  /* 2x2 grid for emprunt direction */
+  .emp-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 8px; margin-bottom: 18px;
+  }
+  .emp-grid button {
+    padding: 14px 10px; background: var(--card); border: 1px solid var(--line);
+    color: var(--ink-dim); font-family: 'Cormorant Garamond', serif;
+    font-style: italic; font-size: 15px; cursor: pointer; border-radius: 2px;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    line-height: 1.2;
+  }
+  .emp-grid button .sym {
+    font-family: 'Jost', sans-serif; font-style: normal;
+    font-size: 18px; font-weight: 400;
+  }
+  .emp-grid button.active {
+    border-color: var(--emprunt); background: rgba(157, 186, 196, 0.12);
+    color: var(--emprunt);
+  }
+  .emp-grid button.active .sym { color: var(--emprunt); }
+
+  /* BUSKING VIEW */
+  .busking-view {
+    position: fixed; inset: 0; background: var(--bg);
+    z-index: 200; display: none; flex-direction: column;
+    padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  }
+  .busking-view.open { display: flex; }
+  .busking-view::before {
+    content: ""; position: fixed; inset: 0; pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.08 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.4; z-index: 1;
+  }
+
+  .busking-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 16px; border-bottom: 1px solid var(--line);
+    position: relative; z-index: 2; background: var(--bg);
+  }
+  .back {
+    background: none; border: none; color: var(--gold);
+    font-size: 24px; cursor: pointer; padding: 4px 8px;
+  }
+  .busking-header h2 {
+    font-family: 'Cormorant Garamond', serif; font-style: italic;
+    font-weight: 500; font-size: 24px; color: var(--ink);
+    flex: 1; text-align: center; padding-right: 40px;
+  }
+  .busking-header .settings-btn {
+    background: none; border: none; color: var(--ink-dim);
+    font-size: 18px; cursor: pointer; padding: 4px 8px;
+  }
+
+  .scroll-wrap {
+    flex: 1; overflow-y: auto; position: relative; z-index: 2; padding: 0 0 100px;
+  }
+
+  /* MONTH CARD */
+  .month-card {
+    margin: 16px 14px;
+    border: 1px solid var(--line); border-radius: 4px;
+    overflow: hidden; background: var(--card);
+  }
+  .month-card.current {
+    border-color: var(--gold-dim);
+    background: linear-gradient(180deg, rgba(212, 168, 87, 0.06), rgba(212, 168, 87, 0.02));
+  }
+  .month-header {
+    padding: 16px 18px; display: flex;
+    justify-content: space-between; align-items: center;
+    cursor: pointer; gap: 10px;
+  }
+  .month-header .left { flex: 1; min-width: 0; }
+  .month-header .name {
+    font-family: 'Cormorant Garamond', serif; font-style: italic;
+    font-size: 20px; color: var(--ink); text-transform: capitalize;
+  }
+  .month-card.current .month-header .name { color: var(--gold); }
+  .month-header .meta {
+    font-size: 11px; color: var(--ink-dim);
+    letter-spacing: 0.15em; text-transform: uppercase;
+    margin-top: 3px; font-family: 'Jost', sans-serif;
+  }
+  .month-header .mtotal {
+    font-family: 'Cormorant Garamond', serif; font-size: 22px;
+    font-weight: 500; color: var(--gold); white-space: nowrap;
+  }
+  .month-header .chevron {
+    color: var(--ink-dim); transition: transform 0.25s;
+    margin-left: 6px; font-size: 12px;
+  }
+  .month-card.expanded .chevron { transform: rotate(180deg); }
+
+  .month-body { display: none; border-top: 1px solid var(--line); }
+  .month-card.expanded .month-body { display: block; }
+
+  .month-stats {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    padding: 14px; gap: 10px;
+    border-bottom: 1px solid var(--line);
+    background: rgba(10, 6, 18, 0.4);
+  }
+  .month-stats .stat { text-align: center; padding: 6px; }
+  .month-stats .stat .v {
+    font-family: 'Cormorant Garamond', serif; font-size: 22px;
+    font-weight: 500; color: var(--ink); display: block;
+  }
+  .month-stats .stat .k {
+    font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ink-dim); margin-top: 2px; display: block;
+  }
+
+  .table-wrap { overflow-x: auto; }
+  table {
+    width: 100%; border-collapse: collapse;
+    font-size: 13px; min-width: 460px;
+  }
+  thead th {
+    background: rgba(10, 6, 18, 0.8); color: var(--gold-dim);
+    font-weight: 400; font-size: 9px;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    padding: 10px 8px; text-align: left;
+    border-bottom: 1px solid var(--line); font-family: 'Jost', sans-serif;
+  }
+  tbody td {
+    padding: 10px 8px; border-bottom: 1px solid var(--line);
+    color: var(--ink); font-family: 'Cormorant Garamond', serif;
+    font-size: 15px; vertical-align: middle;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody td.num { text-align: right; font-weight: 500; }
+  tbody td.total-cell { color: var(--gold); font-weight: 600; }
+  tbody td.date {
+    font-family: 'Jost', sans-serif; font-size: 11px;
+    color: var(--ink-dim); letter-spacing: 0.05em; white-space: nowrap;
+  }
+  tbody td .del {
+    background: none; border: none; color: var(--ink-dim);
+    opacity: 0.4; font-size: 14px; cursor: pointer;
+  }
+
+  .empty-month {
+    padding: 24px 16px; text-align: center;
+    color: var(--ink-dim); font-family: 'Cormorant Garamond', serif;
+    font-style: italic; font-size: 14px;
+  }
+
+  .fab {
+    position: fixed;
+    bottom: calc(22px + env(safe-area-inset-bottom));
+    right: 22px; width: 58px; height: 58px;
+    border-radius: 50%; background: var(--gold);
+    color: var(--bg); border: none;
+    font-size: 30px; cursor: pointer;
+    box-shadow: 0 8px 24px rgba(212, 168, 87, 0.35);
+    z-index: 201; display: none; font-weight: 300;
+  }
+  .busking-view.open ~ .fab { display: block; }
+  .fab:active { transform: scale(0.92); }
+
+  .busking-form-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px;
+  }
+  .busking-form-grid .full { grid-column: 1 / -1; }
+
+  .cd-summary {
+    margin-top: 14px; padding: 12px;
+    background: rgba(212, 168, 87, 0.06);
+    border: 1px solid var(--gold-dim); border-radius: 2px;
+    text-align: center; font-family: 'Cormorant Garamond', serif;
+    font-style: italic; color: var(--gold);
+  }
+  .cd-summary .big {
+    font-size: 26px; font-weight: 500; display: block; margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+
+<!-- LOCK SCREEN -->
+<div class="lock" id="lockScreen">
+  <div class="mark">˖ ࣪⊹ Âkasha ⊹ ࣪˖</div>
+  <h1>Comptes</h1>
+  <div class="ornament">⋆ ⋆ ⋆</div>
+
+  <!-- Biometric prompt (default when registered) -->
+  <div class="bio-screen hidden" id="bioScreen">
+    <div class="fingerprint pulse" id="fpButton" onclick="triggerBio()">
+      <svg viewBox="0 0 24 24"><path d="M12 1C8.14 1 5 4.14 5 8v2c0 .55.45 1 1 1s1-.45 1-1V8c0-2.76 2.24-5 5-5s5 2.24 5 5v2c0 .55.45 1 1 1s1-.45 1-1V8c0-3.86-3.14-7-7-7zm-1 7v5c0 .55.45 1 1 1s1-.45 1-1V8c0-.55-.45-1-1-1s-1 .45-1 1zm-4 5c0-.55-.45-1-1-1s-1 .45-1 1v1c0 3.31 2.69 6 6 6 .55 0 1-.45 1-1s-.45-1-1-1c-2.21 0-4-1.79-4-4v-1zm12 0v1c0 4.42-3.58 8-8 8-.55 0-1 .45-1 1s.45 1 1 1c5.52 0 10-4.48 10-10v-1c0-.55-.45-1-1-1s-1 .45-1 1zm-4 0v3c0 1.66-1.34 3-3 3-.55 0-1 .45-1 1s.45 1 1 1c2.76 0 5-2.24 5-5v-3c0-.55-.45-1-1-1s-1 .45-1 1z"/></svg>
+    </div>
+    <div class="fingerprint-label">Touche pour déverrouiller</div>
+    <button class="link-btn" onclick="switchToPin()">Utiliser le code</button>
+    <div class="lock-msg" id="bioMsg"></div>
+  </div>
+
+  <!-- PIN prompt -->
+  <div class="pin-screen" id="pinScreen">
+    <div class="prompt" id="lockPrompt">Entre ton code</div>
+    <div class="pin-dots" id="pinDots"></div>
+    <div class="keypad" id="keypad"></div>
+    <div class="lock-msg" id="lockMsg"></div>
+    <button class="switch-auth hidden" id="switchBioBtn" onclick="switchToBio()">Utiliser l'empreinte</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="app">
+  <header>
+    <button class="settings-gear" onclick="openSettings()" title="Réglages">⚙</button>
+    <div class="mark">˖ ࣪⊹ Âkasha ⊹ ࣪˖</div>
+    <h1>Comptes</h1>
+    <div class="ornament">⋆ ⋆ ⋆</div>
+    <button class="lock-btn" onclick="lockApp()" title="Verrouiller">⟲</button>
+  </header>
+
+  <div class="total">
+    <div class="label">Total</div>
+    <div class="amount" id="totalDisplay">0<span class="cur">€</span></div>
+  </div>
+
+  <div class="actions">
+    <button class="btn plus" onclick="openOp('plus')"><span class="sign">+</span>Rentrée</button>
+    <button class="btn minus" onclick="openOp('minus')"><span class="sign">−</span>Sortie</button>
+    <button class="btn emp" onclick="openOp('emp')"><span class="sign">⇄</span>Emprunt</button>
+  </div>
+
+  <div class="section-divider"><span>Spécial</span></div>
+
+  <button class="busking-btn" onclick="openBusking()">
+    Busking
+    <small>Registre mensuel</small>
+  </button>
+
+  <div class="registre">
+    <h2>Dernières opérations</h2>
+    <div id="entriesList"></div>
+  </div>
+</div>
+
+<!-- OP MODAL -->
+<div class="modal" id="opModal">
+  <div class="modal-content">
+    <button class="close-x" onclick="closeOp()">×</button>
+    <h3 id="opTitle">Nouvelle opération</h3>
+    <div class="sub" id="opSub" style="display:none"></div>
+
+    <div class="emp-grid" id="empToggle" style="display:none">
+      <button data-dir="prete" onclick="setEmpDir('prete')">
+        <span class="sym">→ −</span>Je prête
+      </button>
+      <button data-dir="rembourse-moi" onclick="setEmpDir('rembourse-moi')">
+        <span class="sym">← +</span>On me rembourse
+      </button>
+      <button data-dir="emprunte" onclick="setEmpDir('emprunte')">
+        <span class="sym">← +</span>J'emprunte
+      </button>
+      <button data-dir="rembourse" onclick="setEmpDir('rembourse')">
+        <span class="sym">→ −</span>Je rembourse
+      </button>
+    </div>
+
+    <label>Montant (€)</label>
+    <input type="number" id="opAmount" step="0.01" inputmode="decimal" placeholder="0.00">
+
+    <label id="opNoteLabel">Description (facultatif)</label>
+    <input type="text" id="opNote" placeholder="ex: courses, cachet...">
+
+    <label>Date</label>
+    <input type="date" id="opDate">
+
+    <button class="validate" onclick="saveOp()">Enregistrer</button>
+  </div>
+</div>
+
+<!-- BUSKING VIEW -->
+<div class="busking-view" id="buskingView">
+  <div class="busking-header">
+    <button class="back" onclick="closeBusking()">←</button>
+    <h2>Busking</h2>
+    <button class="settings-btn" onclick="openCdSettings()" title="Prix CD">⚙</button>
+  </div>
+  <div class="scroll-wrap" id="monthsWrap"></div>
+</div>
+
+<button class="fab" id="fab" onclick="openBuskingForm()">+</button>
+
+<!-- BUSKING FORM -->
+<div class="modal" id="buskingModal">
+  <div class="modal-content">
+    <button class="close-x" onclick="closeBuskingForm()">×</button>
+    <h3>Nouvelle session</h3>
+
+    <div class="busking-form-grid">
+      <div class="full">
+        <label>Date</label>
+        <input type="date" id="bDate">
+      </div>
+      <div class="full">
+        <label>Lieu</label>
+        <input type="text" id="bLieu" placeholder="ex: Place du marché, Toulouse">
+      </div>
+      <div>
+        <label>Nb sessions</label>
+        <input type="number" id="bSess" step="1" min="0" inputmode="numeric" placeholder="0" oninput="updateCdSummary()">
+      </div>
+      <div>
+        <label>Chapeau (€)</label>
+        <input type="number" id="bChapeau" step="0.01" min="0" inputmode="decimal" placeholder="0.00" oninput="updateCdSummary()">
+      </div>
+      <div class="full">
+        <label>Nombre de CD vendus</label>
+        <input type="number" id="bCdNb" step="1" min="0" inputmode="numeric" placeholder="0" oninput="updateCdSummary()">
+      </div>
+    </div>
+
+    <div class="cd-summary" id="cdSummary" style="display:none">
+      Total estimé
+      <span class="big" id="cdSummaryVal">0,00 €</span>
+    </div>
+
+    <button class="validate" onclick="saveBusking()">Enregistrer la session</button>
+  </div>
+</div>
+
+<!-- CD PRICE -->
+<div class="modal" id="cdModal">
+  <div class="modal-content">
+    <button class="close-x" onclick="closeCdSettings()">×</button>
+    <h3>Prix unitaire CD</h3>
+    <div class="sub">Utilisé pour calculer le total des ventes</div>
+    <label>Prix par CD (€)</label>
+    <input type="number" id="cdPrice" step="0.50" min="0" inputmode="decimal">
+    <button class="validate" onclick="saveCdPrice()">Enregistrer</button>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="modal" id="settingsModal">
+  <div class="modal-content">
+    <button class="close-x" onclick="closeSettings()">×</button>
+    <h3>Réglages</h3>
+
+    <div class="settings-row">
+      <div>
+        <div class="lbl">Empreinte digitale</div>
+        <div class="sub-lbl" id="bioStatusText">Non configurée</div>
+      </div>
+      <button class="toggle" id="bioToggle" onclick="toggleBio()"></button>
+    </div>
+
+    <div class="settings-row">
+      <div>
+        <div class="lbl">Changer le code PIN</div>
+        <div class="sub-lbl">Code à 4 chiffres</div>
+      </div>
+      <button class="link-btn" onclick="startChangePin()">Modifier</button>
+    </div>
+
+    <button class="validate secondary" onclick="exportData()">Exporter mes données</button>
+    <button class="validate secondary" onclick="document.getElementById('importFile').click()">Importer</button>
+    <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
+  </div>
+</div>
+
+<script>
+  // ============ STORAGE ============
+  const K_ENTRIES = 'djo_comptes_v3';
+  const K_BUSKING = 'djo_busking_v2';
+  const K_PIN = 'djo_pin_v1';
+  const K_CD_PRICE = 'djo_cd_price_v1';
+  const K_BIO_ID = 'djo_bio_id_v1';
+
+  let entries = JSON.parse(localStorage.getItem(K_ENTRIES) || '[]');
+  let buskingEntries = JSON.parse(localStorage.getItem(K_BUSKING) || '[]');
+  let cdPrice = parseFloat(localStorage.getItem(K_CD_PRICE) || '10');
+
+  function saveEntries() { localStorage.setItem(K_ENTRIES, JSON.stringify(entries)); }
+  function saveBuskingData() { localStorage.setItem(K_BUSKING, JSON.stringify(buskingEntries)); }
+
+  // ============ UTILS ============
+  function todayISO() {
+    const d = new Date();
+    const tz = d.getTimezoneOffset() * 60000;
+    return new Date(d - tz).toISOString().slice(0, 10);
+  }
+  function formatMoney(n) {
+    return n.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function formatDate(iso) {
+    if (!iso) return '';
+    const [y, m, d] = iso.split('-');
+    return `${d}/${m}/${y.slice(2)}`;
+  }
+  function monthKey(iso) { return iso ? iso.slice(0, 7) : ''; }
+  function monthLabel(key) {
+    if (!key) return '';
+    const [y, m] = key.split('-');
+    const months = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+    return `${months[parseInt(m) - 1]} ${y}`;
+  }
+
+  // ============ WEBAUTHN (EMPREINTE) ============
+  const isSecureContext = window.isSecureContext || location.protocol === 'https:';
+  const hasWebAuthn = !!(window.PublicKeyCredential && navigator.credentials);
+  const webAuthnSupported = isSecureContext && hasWebAuthn;
+
+  function b64urlToBuf(s) {
+    s = s.replace(/-/g, '+').replace(/_/g, '/');
+    while (s.length % 4) s += '=';
+    const bin = atob(s);
+    const buf = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+    return buf.buffer;
+  }
+  function bufToB64url(buf) {
+    const bin = String.fromCharCode.apply(null, new Uint8Array(buf));
+    return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+  }
+
+  async function registerBiometric() {
+    if (!webAuthnSupported) {
+      alert("L'empreinte digitale n'est pas disponible ici. Elle nécessite HTTPS et un appareil compatible.");
+      return false;
+    }
+    try {
+      // Check platform authenticator availability
+      const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+      if (!available) {
+        alert("Aucun capteur biométrique détecté sur cet appareil.");
+        return false;
+      }
+
+      const challenge = crypto.getRandomValues(new Uint8Array(32));
+      const userId = crypto.getRandomValues(new Uint8Array(16));
+
+      const cred = await navigator.credentials.create({
+        publicKey: {
+          challenge: challenge,
+          rp: { name: 'Comptes Âkasha', id: location.hostname },
+          user: {
+            id: userId,
+            name: 'djo',
+            displayName: 'D\'jo'
+          },
+          pubKeyCredParams: [
+            { type: 'public-key', alg: -7 },   // ES256
+            { type: 'public-key', alg: -257 }  // RS256
+          ],
+          authenticatorSelection: {
+            authenticatorAttachment: 'platform',
+            userVerification: 'required',
+            residentKey: 'preferred'
+          },
+          timeout: 60000,
+          attestation: 'none'
+        }
+      });
+
+      if (cred) {
+        localStorage.setItem(K_BIO_ID, bufToB64url(cred.rawId));
+        return true;
+      }
+    } catch (err) {
+      console.error('WebAuthn register error:', err);
+      if (err.name === 'NotAllowedError') {
+        // User cancelled
+      } else {
+        alert("Enregistrement impossible : " + (err.message || err.name));
+      }
+    }
+    return false;
+  }
+
+  async function verifyBiometric() {
+    if (!webAuthnSupported) return false;
+    const credId = localStorage.getItem(K_BIO_ID);
+    if (!credId) return false;
+    try {
+      const challenge = crypto.getRandomValues(new Uint8Array(32));
+      const assertion = await navigator.credentials.get({
+        publicKey: {
+          challenge: challenge,
+          allowCredentials: [{
+            type: 'public-key',
+            id: b64urlToBuf(credId),
+            transports: ['internal']
+          }],
+          userVerification: 'required',
+          timeout: 60000
+        }
+      });
+      return !!assertion;
+    } catch (err) {
+      console.error('WebAuthn verify error:', err);
+      return false;
+    }
+  }
+
+  function hasBioRegistered() {
+    return !!localStorage.getItem(K_BIO_ID);
+  }
+
+  // ============ LOCK SCREEN LOGIC ============
+  let pinInput = '';
+  let pinMode = 'check'; // 'check' | 'setup-1' | 'setup-2' | 'change-old' | 'change-new-1' | 'change-new-2'
+  let pinTempBuffer = '';
+
+  function renderPinDots() {
+    const container = document.getElementById('pinDots');
+    container.innerHTML = '';
+    for (let i = 0; i < 4; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'pin-dot' + (i < pinInput.length ? ' filled' : '');
+      container.appendChild(dot);
+    }
+  }
+
+  function renderKeypad() {
+    const pad = document.getElementById('keypad');
+    if (pad.children.length > 0) return;
+    pad.innerHTML = '';
+    const keys = ['1','2','3','4','5','6','7','8','9','','0','⌫'];
+    keys.forEach(k => {
+      const btn = document.createElement('button');
+      btn.className = 'key';
+      if (k === '') btn.className += ' empty';
+      if (k === '⌫') btn.className += ' back';
+      btn.textContent = k;
+      if (k !== '') btn.onclick = () => handleKey(k);
+      pad.appendChild(btn);
+    });
+  }
+
+  function handleKey(k) {
+    const msg = document.getElementById('lockMsg');
+    msg.textContent = '';
+    if (k === '⌫') { pinInput = pinInput.slice(0, -1); }
+    else if (pinInput.length < 4) { pinInput += k; }
+    renderPinDots();
+    if (pinInput.length === 4) setTimeout(processPinEntry, 150);
+  }
+
+  function processPinEntry() {
+    const msg = document.getElementById('lockMsg');
+    const dots = document.getElementById('pinDots');
+    const storedPin = localStorage.getItem(K_PIN);
+
+    const fail = (text) => {
+      msg.textContent = text;
+      dots.classList.add('shake');
+      setTimeout(() => dots.classList.remove('shake'), 400);
+      pinInput = '';
+      setTimeout(renderPinDots, 400);
+    };
+
+    if (pinMode === 'setup-1') {
+      pinTempBuffer = pinInput;
+      pinInput = '';
+      pinMode = 'setup-2';
+      document.getElementById('lockPrompt').textContent = 'Confirme le code';
+      renderPinDots();
+    } else if (pinMode === 'setup-2') {
+      if (pinInput === pinTempBuffer) {
+        localStorage.setItem(K_PIN, pinInput);
+        pinTempBuffer = '';
+        // Offer biometric setup after PIN setup
+        if (webAuthnSupported) {
+          offerBioSetup();
+        } else {
+          unlockApp();
+        }
+      } else {
+        pinTempBuffer = '';
+        pinMode = 'setup-1';
+        document.getElementById('lockPrompt').textContent = 'Crée un code à 4 chiffres';
+        fail('Les codes ne correspondent pas');
+      }
+    } else if (pinMode === 'change-old') {
+      if (pinInput === storedPin) {
+        pinInput = '';
+        pinMode = 'change-new-1';
+        document.getElementById('lockPrompt').textContent = 'Nouveau code';
+        renderPinDots();
+      } else {
+        fail('Code incorrect');
+      }
+    } else if (pinMode === 'change-new-1') {
+      pinTempBuffer = pinInput;
+      pinInput = '';
+      pinMode = 'change-new-2';
+      document.getElementById('lockPrompt').textContent = 'Confirme le nouveau code';
+      renderPinDots();
+    } else if (pinMode === 'change-new-2') {
+      if (pinInput === pinTempBuffer) {
+        localStorage.setItem(K_PIN, pinInput);
+        pinTempBuffer = '';
+        pinMode = 'check';
+        unlockApp();
+      } else {
+        pinTempBuffer = '';
+        pinMode = 'change-new-1';
+        document.getElementById('lockPrompt').textContent = 'Nouveau code';
+        fail('Les codes ne correspondent pas');
+      }
+    } else {
+      // check mode
+      if (pinInput === storedPin) {
+        unlockApp();
+      } else {
+        fail('Code incorrect');
+      }
+    }
+  }
+
+  async function offerBioSetup() {
+    if (!webAuthnSupported) {
+      unlockApp();
+      return;
+    }
+    try {
+      const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+      if (!available) {
+        unlockApp();
+        return;
+      }
+    } catch (e) {
+      unlockApp();
+      return;
+    }
+
+    if (confirm("Veux-tu activer le déverrouillage par empreinte digitale ?")) {
+      const ok = await registerBiometric();
+      if (ok) {
+        alert("Empreinte enregistrée ✓");
+      }
+    }
+    unlockApp();
+  }
+
+  async function triggerBio() {
+    const msg = document.getElementById('bioMsg');
+    const fp = document.getElementById('fpButton');
+    msg.textContent = '';
+    fp.classList.remove('pulse');
+    const ok = await verifyBiometric();
+    if (ok) {
+      unlockApp();
+    } else {
+      msg.textContent = 'Échec — réessaye ou utilise ton code';
+      fp.classList.add('pulse');
+    }
+  }
+
+  function switchToPin() {
+    document.getElementById('bioScreen').classList.add('hidden');
+    document.getElementById('pinScreen').classList.remove('hidden');
+    if (hasBioRegistered()) {
+      document.getElementById('switchBioBtn').classList.remove('hidden');
+    }
+    pinInput = '';
+    pinMode = 'check';
+    document.getElementById('lockPrompt').textContent = 'Entre ton code';
+    renderPinDots();
+  }
+
+  function switchToBio() {
+    document.getElementById('pinScreen').classList.add('hidden');
+    document.getElementById('bioScreen').classList.remove('hidden');
+    document.getElementById('fpButton').classList.add('pulse');
+    document.getElementById('bioMsg').textContent = '';
+    // Auto-trigger on mobile since the gesture of opening counts
+    setTimeout(triggerBio, 300);
+  }
+
+  async function initLock() {
+    renderKeypad();
+    const storedPin = localStorage.getItem(K_PIN);
+    const bioRegistered = hasBioRegistered();
+
+    if (!storedPin) {
+      // First launch - PIN setup
+      pinMode = 'setup-1';
+      pinInput = '';
+      document.getElementById('bioScreen').classList.add('hidden');
+      document.getElementById('pinScreen').classList.remove('hidden');
+      document.getElementById('switchBioBtn').classList.add('hidden');
+      document.getElementById('lockPrompt').textContent = 'Crée un code à 4 chiffres';
+      renderPinDots();
+    } else if (bioRegistered && webAuthnSupported) {
+      // Has biometric -> show fingerprint prompt
+      document.getElementById('bioScreen').classList.remove('hidden');
+      document.getElementById('pinScreen').classList.add('hidden');
+      document.getElementById('fpButton').classList.add('pulse');
+      document.getElementById('bioMsg').textContent = '';
+      // Auto-trigger
+      setTimeout(triggerBio, 400);
+    } else {
+      // PIN only
+      pinMode = 'check';
+      pinInput = '';
+      document.getElementById('bioScreen').classList.add('hidden');
+      document.getElementById('pinScreen').classList.remove('hidden');
+      document.getElementById('switchBioBtn').classList.add('hidden');
+      document.getElementById('lockPrompt').textContent = 'Entre ton code';
+      renderPinDots();
+    }
+  }
+
+  function unlockApp() {
+    document.getElementById('lockScreen').classList.add('hidden');
+    document.getElementById('app').classList.add('open');
+    render();
+  }
+
+  function lockApp() {
+    pinInput = '';
+    pinMode = 'check';
+    document.getElementById('app').classList.remove('open');
+    document.getElementById('buskingView').classList.remove('open');
+    document.getElementById('fab').style.display = 'none';
+    document.getElementById('lockScreen').classList.remove('hidden');
+    initLock();
+  }
+
+  function startChangePin() {
+    closeSettings();
+    pinInput = '';
+    pinMode = 'change-old';
+    document.getElementById('app').classList.remove('open');
+    document.getElementById('lockScreen').classList.remove('hidden');
+    document.getElementById('bioScreen').classList.add('hidden');
+    document.getElementById('pinScreen').classList.remove('hidden');
+    document.getElementById('switchBioBtn').classList.add('hidden');
+    document.getElementById('lockPrompt').textContent = 'Code actuel';
+    renderPinDots();
+  }
+
+  // ============ RENDER MAIN ============
+  function render() {
+    const total = entries.reduce((s, e) => s + e.amount, 0);
+    const [intP, dec] = formatMoney(total).split(',');
+    document.getElementById('totalDisplay').innerHTML =
+      `${intP}<span class="cents">,${dec}</span><span class="cur">€</span>`;
+
+    const list = document.getElementById('entriesList');
+    if (entries.length === 0) {
+      list.innerHTML = '<div class="empty">Aucune opération pour le moment</div>';
+      return;
+    }
+    const sorted = [...entries].sort((a, b) => {
+      if (a.date !== b.date) return b.date.localeCompare(a.date);
+      return b.id - a.id;
+    });
+    list.innerHTML = sorted.slice(0, 40).map(e => {
+      const cls = e.amount >= 0 ? 'plus' : 'minus';
+      const sign = e.amount >= 0 ? '+' : '−';
+      const tag = e.kind === 'emp' ? '<span class="tag">Emprunt</span>' : '';
+      const defaultNote = e.kind === 'emp'
+        ? (e.empDir === 'prete' ? 'Prêt'
+           : e.empDir === 'rembourse-moi' ? 'Remboursement reçu'
+           : e.empDir === 'emprunte' ? 'Emprunt'
+           : 'Remboursement')
+        : (e.amount >= 0 ? 'Rentrée' : 'Sortie');
+      return `
+        <div class="entry ${cls}">
+          <div class="left">
+            <div class="date">${formatDate(e.date)}</div>
+            <div class="note">${tag}${e.note || defaultNote}</div>
+          </div>
+          <div class="amt">${sign}${formatMoney(Math.abs(e.amount))} €</div>
+          <button class="del" onclick="deleteEntry(${e.id})">×</button>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // ============ OP ============
+  let currentOp = 'plus';
+  let empDir = 'prete';
+
+  function openOp(type) {
+    currentOp = type;
+    const titles = { plus: 'Nouvelle rentrée', minus: 'Nouvelle sortie', emp: 'Emprunt' };
+    document.getElementById('opTitle').textContent = titles[type];
+    document.getElementById('opAmount').value = '';
+    document.getElementById('opNote').value = '';
+    document.getElementById('opDate').value = todayISO();
+
+    const empToggle = document.getElementById('empToggle');
+    const opSub = document.getElementById('opSub');
+
+    if (type === 'emp') {
+      empToggle.style.display = 'grid';
+      opSub.style.display = 'block';
+      opSub.textContent = 'Choisis la direction de l\'argent';
+      empDir = 'prete';
+      updateEmpButtons();
+      document.getElementById('opNoteLabel').textContent = 'À qui / de qui (facultatif)';
+      document.getElementById('opNote').placeholder = 'ex: Sohan, Shanti...';
+    } else {
+      empToggle.style.display = 'none';
+      opSub.style.display = 'none';
+      document.getElementById('opNoteLabel').textContent = 'Description (facultatif)';
+      document.getElementById('opNote').placeholder = 'ex: courses, cachet...';
+    }
+
+    document.getElementById('opModal').classList.add('open');
+    setTimeout(() => document.getElementById('opAmount').focus(), 200);
+  }
+
+  function setEmpDir(dir) { empDir = dir; updateEmpButtons(); }
+
+  function updateEmpButtons() {
+    document.querySelectorAll('#empToggle button').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.dir === empDir);
+    });
+  }
+
+  function closeOp() {
+    document.getElementById('opModal').classList.remove('open');
+  }
+
+  function saveOp() {
+    const amt = parseFloat(document.getElementById('opAmount').value);
+    if (isNaN(amt) || amt <= 0) {
+      document.getElementById('opAmount').focus();
+      return;
+    }
+    const note = document.getElementById('opNote').value.trim();
+    const date = document.getElementById('opDate').value || todayISO();
+
+    let entry;
+    if (currentOp === 'emp') {
+      const isOutgoing = empDir === 'prete' || empDir === 'rembourse';
+      entry = {
+        id: Date.now(),
+        amount: isOutgoing ? -amt : amt,
+        note: note, date: date, kind: 'emp', empDir: empDir
+      };
+    } else {
+      entry = {
+        id: Date.now(),
+        amount: currentOp === 'plus' ? amt : -amt,
+        note: note, date: date
+      };
+    }
+    entries.push(entry);
+    saveEntries();
+    render();
+    closeOp();
+  }
+
+  function deleteEntry(id) {
+    if (!confirm('Supprimer cette opération ?')) return;
+    entries = entries.filter(e => e.id !== id);
+    saveEntries();
+    render();
+  }
+
+  // ============ BUSKING ============
+  function openBusking() {
+    document.getElementById('buskingView').classList.add('open');
+    document.getElementById('fab').style.display = 'block';
+    renderBusking();
+  }
+
+  function closeBusking() {
+    document.getElementById('buskingView').classList.remove('open');
+    document.getElementById('fab').style.display = 'none';
+  }
+
+  function renderBusking() {
+    const wrap = document.getElementById('monthsWrap');
+    const currentMonth = todayISO().slice(0, 7);
+
+    const byMonth = {};
+    buskingEntries.forEach(b => {
+      const k = monthKey(b.date);
+      if (!byMonth[k]) byMonth[k] = [];
+      byMonth[k].push(b);
+    });
+    if (!byMonth[currentMonth]) byMonth[currentMonth] = [];
+
+    const months = Object.keys(byMonth).sort((a, b) => b.localeCompare(a));
+
+    wrap.innerHTML = months.map(k => {
+      const isCurrent = k === currentMonth;
+      const sessions = byMonth[k].sort((a, b) => {
+        if (a.date !== b.date) return b.date.localeCompare(a.date);
+        return b.id - a.id;
+      });
+
+      const totalSess = sessions.reduce((s, b) => s + (b.sess || 0), 0);
+      const totalCdNb = sessions.reduce((s, b) => s + (b.cdNb || 0), 0);
+      const totalChapeau = sessions.reduce((s, b) => s + (b.chapeau || 0), 0);
+      const realCdAmt = sessions.reduce((s, b) => s + ((b.cdNb || 0) * (b.cdPriceAtTime || cdPrice)), 0);
+      const grandTotal = totalChapeau + realCdAmt;
+
+      const expandedClass = isCurrent ? ' expanded' : '';
+
+      const tableRows = sessions.length ? sessions.map(b => {
+        const cdAmt = (b.cdNb || 0) * (b.cdPriceAtTime || cdPrice);
+        const tot = (b.chapeau || 0) + cdAmt;
+        return `
+          <tr>
+            <td class="date">${formatDate(b.date)}</td>
+            <td>${b.lieu || '—'}</td>
+            <td class="num">${b.sess || 0}</td>
+            <td class="num">${b.cdNb || 0}</td>
+            <td class="num total-cell">${formatMoney(tot)}</td>
+            <td><button class="del" onclick="deleteBusking(${b.id}, event)">×</button></td>
+          </tr>
+        `;
+      }).join('') : '';
+
+      const bodyContent = sessions.length ? `
+        <div class="month-stats">
+          <div class="stat"><span class="v">${totalSess}</span><span class="k">Sessions</span></div>
+          <div class="stat"><span class="v">${totalCdNb}</span><span class="k">CD vendus</span></div>
+          <div class="stat"><span class="v">${formatMoney(totalChapeau)}€</span><span class="k">Chapeau</span></div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Date</th><th>Lieu</th>
+              <th style="text-align:right">Sess.</th>
+              <th style="text-align:right">CD</th>
+              <th style="text-align:right">Total</th><th></th></tr>
+            </thead>
+            <tbody>${tableRows}</tbody>
+          </table>
+        </div>
+      ` : `<div class="empty-month">Aucune session ce mois-ci</div>`;
+
+      return `
+        <div class="month-card${isCurrent ? ' current' : ''}${expandedClass}" data-month="${k}">
+          <div class="month-header" onclick="toggleMonth('${k}')">
+            <div class="left">
+              <div class="name">${monthLabel(k)}${isCurrent ? ' · en cours' : ''}</div>
+              <div class="meta">${sessions.length} session${sessions.length > 1 ? 's' : ''}</div>
+            </div>
+            <div class="mtotal">${formatMoney(grandTotal)} €</div>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="month-body">${bodyContent}</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function toggleMonth(key) {
+    const card = document.querySelector(`.month-card[data-month="${key}"]`);
+    if (card) card.classList.toggle('expanded');
+  }
+
+  function openBuskingForm() {
+    document.getElementById('bDate').value = todayISO();
+    document.getElementById('bLieu').value = '';
+    document.getElementById('bSess').value = '';
+    document.getElementById('bChapeau').value = '';
+    document.getElementById('bCdNb').value = '';
+    document.getElementById('cdSummary').style.display = 'none';
+    document.getElementById('buskingModal').classList.add('open');
+    setTimeout(() => document.getElementById('bLieu').focus(), 200);
+  }
+
+  function closeBuskingForm() {
+    document.getElementById('buskingModal').classList.remove('open');
+  }
+
+  function updateCdSummary() {
+    const chap = parseFloat(document.getElementById('bChapeau').value) || 0;
+    const cdNb = parseInt(document.getElementById('bCdNb').value) || 0;
+    const total = chap + (cdNb * cdPrice);
+    const summary = document.getElementById('cdSummary');
+    if (total > 0) {
+      summary.style.display = 'block';
+      document.getElementById('cdSummaryVal').textContent = formatMoney(total) + ' €';
+    } else {
+      summary.style.display = 'none';
+    }
+  }
+
+  function saveBusking() {
+    const chap = parseFloat(document.getElementById('bChapeau').value) || 0;
+    const cdNb = parseInt(document.getElementById('bCdNb').value) || 0;
+    const sess = parseInt(document.getElementById('bSess').value) || 0;
+
+    if (chap === 0 && cdNb === 0 && sess === 0) {
+      alert('Remplis au moins un champ');
+      return;
+    }
+
+    const b = {
+      id: Date.now(),
+      date: document.getElementById('bDate').value || todayISO(),
+      lieu: document.getElementById('bLieu').value.trim(),
+      sess: sess, chapeau: chap, cdNb: cdNb, cdPriceAtTime: cdPrice
+    };
+
+    buskingEntries.push(b);
+    saveBuskingData();
+
+    const total = chap + (cdNb * cdPrice);
+    if (total > 0) {
+      entries.push({
+        id: Date.now() + 1,
+        amount: total,
+        note: `Busking${b.lieu ? ' · ' + b.lieu : ''}`,
+        date: b.date,
+        buskingRef: b.id
+      });
+      saveEntries();
+    }
+
+    renderBusking();
+    render();
+    closeBuskingForm();
+  }
+
+  function deleteBusking(id, evt) {
+    if (evt) evt.stopPropagation();
+    if (!confirm('Supprimer cette session ? (Aussi retirée du registre principal)')) return;
+    buskingEntries = buskingEntries.filter(x => x.id !== id);
+    saveBuskingData();
+    entries = entries.filter(e => e.buskingRef !== id);
+    saveEntries();
+    renderBusking();
+    render();
+  }
+
+  // ============ CD PRICE ============
+  function openCdSettings() {
+    document.getElementById('cdPrice').value = cdPrice;
+    document.getElementById('cdModal').classList.add('open');
+  }
+  function closeCdSettings() {
+    document.getElementById('cdModal').classList.remove('open');
+  }
+  function saveCdPrice() {
+    const v = parseFloat(document.getElementById('cdPrice').value);
+    if (!isNaN(v) && v >= 0) {
+      cdPrice = v;
+      localStorage.setItem(K_CD_PRICE, String(v));
+    }
+    closeCdSettings();
+    renderBusking();
+  }
+
+  // ============ SETTINGS ============
+  function openSettings() {
+    updateBioStatus();
+    document.getElementById('settingsModal').classList.add('open');
+  }
+  function closeSettings() {
+    document.getElementById('settingsModal').classList.remove('open');
+  }
+  function updateBioStatus() {
+    const toggle = document.getElementById('bioToggle');
+    const text = document.getElementById('bioStatusText');
+    if (!webAuthnSupported) {
+      text.textContent = 'Non disponible ici (HTTPS requis)';
+      toggle.style.opacity = '0.3';
+      toggle.style.pointerEvents = 'none';
+      return;
+    }
+    if (hasBioRegistered()) {
+      text.textContent = 'Activée';
+      toggle.classList.add('on');
+    } else {
+      text.textContent = 'Non configurée';
+      toggle.classList.remove('on');
+    }
+  }
+  async function toggleBio() {
+    if (!webAuthnSupported) return;
+    if (hasBioRegistered()) {
+      if (confirm("Désactiver le déverrouillage par empreinte ?")) {
+        localStorage.removeItem(K_BIO_ID);
+        updateBioStatus();
+      }
+    } else {
+      const ok = await registerBiometric();
+      if (ok) updateBioStatus();
+    }
+  }
+
+  function exportData() {
+    const data = {
+      version: 3,
+      exportedAt: new Date().toISOString(),
+      entries: entries,
+      busking: buskingEntries,
+      cdPrice: cdPrice
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `comptes-akasha-${todayISO()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function importData(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const data = JSON.parse(e.target.result);
+        if (!data.entries || !Array.isArray(data.entries)) {
+          alert('Fichier invalide');
+          return;
+        }
+        if (!confirm("Remplacer les données actuelles par l'import ?")) return;
+        entries = data.entries;
+        buskingEntries = data.busking || [];
+        cdPrice = data.cdPrice || 10;
+        saveEntries();
+        saveBuskingData();
+        localStorage.setItem(K_CD_PRICE, String(cdPrice));
+        render();
+        closeSettings();
+        alert('Import réussi ✓');
+      } catch (err) {
+        alert('Erreur lors de l\'import : ' + err.message);
+      }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+  }
+
+  // ============ BACKDROP CLICKS ============
+  ['opModal', 'buskingModal', 'cdModal', 'settingsModal'].forEach(id => {
+    document.getElementById(id).addEventListener('click', e => {
+      if (e.target.id === id) e.target.classList.remove('open');
+    });
+  });
+
+  // ============ SERVICE WORKER ============
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(err => {
+        console.warn('SW registration failed:', err);
+      });
+    });
+  }
+
+  // ============ INIT ============
+  initLock();
+</script>
+</body>
+</html>
