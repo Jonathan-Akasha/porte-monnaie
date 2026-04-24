@@ -204,6 +204,7 @@
   .total .label {
     font-family: 'Cormorant Garamond', serif; font-style: italic; color: var(--ink-dim);
     font-size: 14px; letter-spacing: 0.25em; text-transform: uppercase; margin-bottom: 12px;
+    display: inline-flex; align-items: center; gap: 10px;
   }
   .total .amount {
     font-family: 'Cormorant Garamond', serif; font-weight: 500;
@@ -211,6 +212,16 @@
   }
   .total .amount .cents { font-size: 26px; color: var(--ink-dim); margin-left: 2px; }
   .total .amount .cur { color: var(--gold); margin-left: 6px; font-weight: 400; }
+  .total .amount.masked { letter-spacing: 0.1em; color: var(--ink-dim); }
+
+  .eye-btn {
+    background: none; border: none; padding: 4px;
+    cursor: pointer; opacity: 0.5;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: opacity 0.2s;
+  }
+  .eye-btn:active { opacity: 1; }
+  .eye-btn svg { width: 18px; height: 18px; fill: var(--ink-dim); }
 
   /* ACTIONS */
   .actions {
@@ -773,7 +784,12 @@
   </header>
 
   <div class="total">
-    <div class="label">Total</div>
+    <div class="label">
+      Total
+      <button class="eye-btn" id="eyeBtn" onclick="toggleHideTotal()" title="Cacher/afficher">
+        <svg viewBox="0 0 24 24" id="eyeIcon"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6h1.9c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm0 12H6V10h12v10zm-6-3c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"/></svg>
+      </button>
+    </div>
     <div class="amount" id="totalDisplay">0<span class="cur">€</span></div>
   </div>
 
@@ -942,6 +958,7 @@
   const K_PIN = 'djo_pin_v1';
   const K_CD_PRICE = 'djo_cd_price_v1';
   const K_BIO_ID = 'djo_bio_id_v1';
+  const K_HIDE_TOTAL = 'djo_hide_total_v1';
 
   let entries = JSON.parse(localStorage.getItem(K_ENTRIES) || '[]');
   let buskingEntries = JSON.parse(localStorage.getItem(K_BUSKING) || '[]');
@@ -1309,12 +1326,44 @@
   }
 
   // ============ RENDER MAIN ============
+  function toggleHideTotal() {
+    const isHidden = localStorage.getItem(K_HIDE_TOTAL) === '1';
+    if (isHidden) {
+      localStorage.removeItem(K_HIDE_TOTAL);
+    } else {
+      localStorage.setItem(K_HIDE_TOTAL, '1');
+    }
+    render();
+  }
+
+  function updateEyeIcon() {
+    const isHidden = localStorage.getItem(K_HIDE_TOTAL) === '1';
+    const icon = document.getElementById('eyeIcon');
+    if (!icon) return;
+    if (isHidden) {
+      // Cadenas fermé
+      icon.innerHTML = '<path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z"/>';
+    } else {
+      // Cadenas ouvert
+      icon.innerHTML = '<path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6h1.9c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm0 12H6V10h12v10zm-6-3c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"/>';
+    }
+  }
+
   function render() {
     const total = entries.reduce((s, e) => s + e.amount, 0);
-    const [intP, dec] = formatMoney(total).split(',');
-    document.getElementById('totalDisplay').innerHTML =
-      `${intP}<span class="cents">,${dec}</span><span class="cur">€</span>`;
+    const totalEl = document.getElementById('totalDisplay');
+    const isHidden = localStorage.getItem(K_HIDE_TOTAL) === '1';
 
+    if (isHidden) {
+      totalEl.classList.add('masked');
+      totalEl.innerHTML = '• • • • <span class="cur">€</span>';
+    } else {
+      totalEl.classList.remove('masked');
+      const [intP, dec] = formatMoney(total).split(',');
+      totalEl.innerHTML = `${intP}<span class="cents">,${dec}</span><span class="cur">€</span>`;
+    }
+
+    updateEyeIcon();
     renderDettesSummary();
 
     const list = document.getElementById('entriesList');
@@ -1336,13 +1385,14 @@
            : e.empDir === 'emprunte' ? 'Emprunt'
            : 'Remboursement')
         : (e.amount >= 0 ? 'Rentrée' : 'Sortie');
+      const amtDisplay = isHidden ? '••• €' : `${sign}${formatMoney(Math.abs(e.amount))} €`;
       return `
         <div class="entry ${cls}">
           <div class="left">
             <div class="date">${formatDate(e.date)}</div>
             <div class="note">${tag}${e.note || defaultNote}</div>
           </div>
-          <div class="amt">${sign}${formatMoney(Math.abs(e.amount))} €</div>
+          <div class="amt">${amtDisplay}</div>
           <button class="del" onclick="deleteEntry(${e.id})">×</button>
         </div>
       `;
@@ -1381,6 +1431,7 @@
   function renderDettesSummary() {
     const summary = document.getElementById('dettesSummary');
     const balances = computeDettes();
+    const isHidden = localStorage.getItem(K_HIDE_TOTAL) === '1';
 
     // Only show non-settled balances
     const active = Object.entries(balances).filter(([n, d]) => Math.abs(d.balance) > 0.005);
@@ -1393,12 +1444,15 @@
     // Sort: biggest absolute amount first
     active.sort((a, b) => Math.abs(b[1].balance) - Math.abs(a[1].balance));
 
+    const maskAmt = '••• €';
+
     const lines = active.slice(0, 4).map(([name, data]) => {
       const b = data.balance;
+      const amt = isHidden ? maskAmt : `${formatMoney(Math.abs(b))} €`;
       if (b > 0) {
-        return `<div class="line owed"><span class="name">${escapeHtml(name)} te doit</span><span class="amt">${formatMoney(b)} €</span></div>`;
+        return `<div class="line owed"><span class="name">${escapeHtml(name)} te doit</span><span class="amt">${amt}</span></div>`;
       } else {
-        return `<div class="line owes"><span class="name">Tu dois à ${escapeHtml(name)}</span><span class="amt">${formatMoney(Math.abs(b))} €</span></div>`;
+        return `<div class="line owes"><span class="name">Tu dois à ${escapeHtml(name)}</span><span class="amt">${amt}</span></div>`;
       }
     }).join('');
 
