@@ -195,24 +195,39 @@
     font-size: 20px; cursor: pointer; opacity: 0.6; padding: 6px;
   }
 
-  /* TOTAL */
-  .total {
-    text-align: center; padding: 36px 20px; margin-bottom: 28px;
-    border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
-    background: linear-gradient(180deg, transparent, rgba(212, 168, 87, 0.03), transparent);
+  /* TOTALS — deux compteurs */
+  .totals-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-bottom: 18px;
   }
-  .total .label {
+  .totals-row.dual { grid-template-columns: 1fr 1fr; }
+  .total-card {
+    text-align: center; padding: 24px 16px;
+    border: 1px solid var(--line); border-radius: 4px;
+    background: linear-gradient(180deg, transparent, rgba(212, 168, 87, 0.04), transparent);
+  }
+  .totals-row.dual .total-card { padding: 20px 12px; }
+  .total-card .label {
     font-family: 'Cormorant Garamond', serif; font-style: italic; color: var(--ink-dim);
-    font-size: 14px; letter-spacing: 0.25em; text-transform: uppercase; margin-bottom: 12px;
-    display: inline-flex; align-items: center; gap: 10px;
+    font-size: 13px; letter-spacing: 0.22em; text-transform: uppercase; margin-bottom: 10px;
+    display: inline-flex; align-items: center; gap: 8px;
   }
-  .total .amount {
+  .total-card .label .cur-flag {
+    font-family: 'Cormorant Garamond', serif;
+    color: var(--gold); font-style: normal; font-size: 16px;
+  }
+  .total-card .amount {
     font-family: 'Cormorant Garamond', serif; font-weight: 500;
-    font-size: 56px; color: var(--ink); line-height: 1;
+    color: var(--ink); line-height: 1;
+    font-size: 48px;
   }
-  .total .amount .cents { font-size: 26px; color: var(--ink-dim); margin-left: 2px; }
-  .total .amount .cur { color: var(--gold); margin-left: 6px; font-weight: 400; }
-  .total .amount.masked { letter-spacing: 0.1em; color: var(--ink-dim); }
+  .totals-row.dual .total-card .amount { font-size: 36px; }
+  .total-card .amount .cents { font-size: 22px; color: var(--ink-dim); margin-left: 2px; }
+  .totals-row.dual .total-card .amount .cents { font-size: 18px; }
+  .total-card .amount .cur { color: var(--gold); margin-left: 6px; font-weight: 400; font-size: 0.55em; }
+  .total-card .amount.masked { letter-spacing: 0.1em; color: var(--ink-dim); }
 
   .eye-btn {
     background: none; border: none; padding: 4px;
@@ -221,7 +236,87 @@
     transition: opacity 0.2s;
   }
   .eye-btn:active { opacity: 1; }
-  .eye-btn svg { width: 18px; height: 18px; fill: var(--ink-dim); }
+  .eye-btn svg { width: 16px; height: 16px; fill: var(--ink-dim); }
+
+  /* Mode Suisse bar */
+  .swiss-mode-bar {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px; margin-bottom: 24px;
+    border: 1px solid var(--line); border-radius: 4px;
+    background: var(--card);
+    font-family: 'Cormorant Garamond', serif; font-style: italic;
+    font-size: 14px; color: var(--ink-dim);
+  }
+  .swiss-mode-bar.active {
+    border-color: rgba(212, 50, 50, 0.4);
+    background: linear-gradient(135deg, rgba(212, 50, 50, 0.06), rgba(212, 168, 87, 0.04));
+  }
+  .swiss-mode-bar.active span:first-child { color: var(--ink); }
+
+  .toggle-mini {
+    width: 38px; height: 22px; border-radius: 11px;
+    background: var(--line); border: none; cursor: pointer;
+    position: relative; transition: background 0.2s; flex-shrink: 0;
+  }
+  .toggle-mini::after {
+    content: ''; position: absolute; top: 2px; left: 2px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--ink-dim); transition: all 0.2s;
+  }
+  .toggle-mini.on { background: rgba(212, 50, 50, 0.35); }
+  .toggle-mini.on::after { left: 18px; background: #d43232; }
+
+  .change-btn {
+    margin-left: auto;
+    padding: 8px 14px; background: rgba(212, 168, 87, 0.1);
+    border: 1px solid var(--gold-dim); color: var(--gold);
+    font-family: 'Cormorant Garamond', serif; font-style: italic;
+    font-size: 14px; cursor: pointer; border-radius: 2px;
+    white-space: nowrap;
+  }
+  .change-btn:active { transform: scale(0.96); }
+
+  /* Modale Change */
+  .change-rate-info {
+    text-align: center;
+    margin: 14px 0 4px;
+    padding: 10px;
+    background: rgba(212, 168, 87, 0.08);
+    border: 1px solid var(--gold-dim); border-radius: 2px;
+    color: var(--ink); font-family: 'Cormorant Garamond', serif;
+    font-style: italic; font-size: 16px;
+  }
+  .change-rate-info strong { color: var(--gold); font-weight: 500; }
+
+  .change-warning {
+    margin-top: 14px;
+    padding: 10px 12px;
+    background: rgba(212, 144, 144, 0.08);
+    border-left: 3px solid var(--minus);
+    color: var(--ink-dim); font-style: italic;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 13px; border-radius: 2px;
+  }
+
+  /* Badge équivalent EUR sur les entrées CHF converties */
+  .entry .eur-equiv,
+  .person-entry .eur-equiv {
+    font-size: 11px; color: var(--ink-dim);
+    font-style: italic; margin-top: 2px;
+    display: block;
+    font-family: 'Cormorant Garamond', serif;
+  }
+  .entry .amt-block { display: flex; flex-direction: column; align-items: flex-end; }
+  .entry .amt-block .eur-equiv { margin-top: 1px; }
+
+  /* CHF tag */
+  .entry .chf-tag, .person-entry .chf-tag {
+    display: inline-block; font-family: 'Jost', sans-serif;
+    font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase;
+    padding: 2px 6px; border-radius: 2px; margin-right: 6px;
+    vertical-align: middle; opacity: 0.85;
+    background: rgba(212, 50, 50, 0.15); color: #d96a6a;
+  }
 
   /* ACTIONS */
   .actions {
@@ -785,14 +880,28 @@
     <button class="lock-btn" onclick="lockApp()" title="Verrouiller">⟲</button>
   </header>
 
-  <div class="total">
-    <div class="label">
-      Total
-      <button class="eye-btn" id="eyeBtn" onclick="toggleHideTotal()" title="Cacher/afficher">
-        <svg viewBox="0 0 24 24" id="eyeIcon"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6h1.9c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm0 12H6V10h12v10zm-6-3c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"/></svg>
-      </button>
+  <div class="totals-row">
+    <div class="total-card" id="totalEurCard">
+      <div class="label">
+        <span class="cur-flag">€</span> Euros
+        <button class="eye-btn" id="eyeBtn" onclick="toggleHideTotal()" title="Cacher/afficher">
+          <svg viewBox="0 0 24 24" id="eyeIcon"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6h1.9c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm0 12H6V10h12v10zm-6-3c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"/></svg>
+        </button>
+      </div>
+      <div class="amount" id="totalDisplay">0<span class="cur">€</span></div>
     </div>
-    <div class="amount" id="totalDisplay">0<span class="cur">€</span></div>
+    <div class="total-card" id="totalChfCard" style="display:none">
+      <div class="label">
+        <span class="cur-flag">₣</span> Francs CH
+      </div>
+      <div class="amount" id="totalChfDisplay">0<span class="cur">CHF</span></div>
+    </div>
+  </div>
+
+  <div class="swiss-mode-bar" id="swissModeBar">
+    <span>Mode Suisse</span>
+    <button class="toggle-mini" id="swissToggle" onclick="toggleSwissMode()"></button>
+    <button class="change-btn" onclick="openChangeModal()" title="Faire le change">💱 Changer</button>
   </div>
 
   <div class="actions">
@@ -925,6 +1034,34 @@
   </div>
 </div>
 
+<!-- FAIRE LE CHANGE -->
+<div class="modal" id="changeModal">
+  <div class="modal-content">
+    <button class="close-x" onclick="closeChangeModal()">×</button>
+    <h3>Faire le change</h3>
+    <div class="sub">CHF → EUR au taux du jour</div>
+
+    <label>Montant CHF changé</label>
+    <input type="number" id="changeChf" step="0.01" min="0" inputmode="decimal" placeholder="0.00" oninput="updateChangeRate()">
+
+    <label>Euros reçus en échange</label>
+    <input type="number" id="changeEur" step="0.01" min="0" inputmode="decimal" placeholder="0.00" oninput="updateChangeRate()">
+
+    <div id="changeRateInfo" class="change-rate-info" style="display:none">
+      <span>Taux : <strong id="changeRateValue">—</strong></span>
+    </div>
+
+    <label>Date</label>
+    <input type="date" id="changeDate">
+
+    <div class="change-warning">
+      ⚠️ Toutes les opérations CHF non-converties prendront ce taux pour leur équivalent EUR.
+    </div>
+
+    <button class="validate" onclick="saveChange()">Enregistrer le change</button>
+  </div>
+</div>
+
 <!-- SETTINGS -->
 <div class="modal" id="settingsModal">
   <div class="modal-content">
@@ -961,6 +1098,8 @@
   const K_CD_PRICE = 'djo_cd_price_v1';
   const K_BIO_ID = 'djo_bio_id_v1';
   const K_HIDE_TOTAL = 'djo_hide_total_v1';
+  const K_SWISS_MODE = 'djo_swiss_mode_v1';
+  const K_LAST_RATE = 'djo_last_rate_v1';
 
   let entries = JSON.parse(localStorage.getItem(K_ENTRIES) || '[]');
   let buskingEntries = JSON.parse(localStorage.getItem(K_BUSKING) || '[]');
@@ -989,6 +1128,20 @@
     const [y, m] = key.split('-');
     const months = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
     return `${months[parseInt(m) - 1]} ${y}`;
+  }
+
+  // ============ DEVISES ============
+  // Une entrée a un champ 'cur' optionnel : 'CHF' ou 'EUR' (par défaut)
+  // Une entrée CHF convertie a 'eurEquiv' (montant en EUR au taux du change)
+  function entryCur(e) {
+    return e.cur === 'CHF' ? 'CHF' : 'EUR';
+  }
+  function isSwissMode() {
+    return localStorage.getItem(K_SWISS_MODE) === '1';
+  }
+  function curSymbol(c) { return c === 'CHF' ? 'CHF' : '€'; }
+  function formatAmt(n, c) {
+    return formatMoney(n) + ' ' + curSymbol(c);
   }
 
   // ============ WEBAUTHN (EMPREINTE) ============
@@ -1338,6 +1491,124 @@
     render();
   }
 
+  // ============ SWISS MODE ============
+  function toggleSwissMode() {
+    if (isSwissMode()) {
+      localStorage.removeItem(K_SWISS_MODE);
+    } else {
+      localStorage.setItem(K_SWISS_MODE, '1');
+    }
+    render();
+  }
+
+  function updateSwissModeUI() {
+    const bar = document.getElementById('swissModeBar');
+    const toggle = document.getElementById('swissToggle');
+    if (!bar) return;
+    if (isSwissMode()) {
+      bar.classList.add('active');
+      toggle.classList.add('on');
+    } else {
+      bar.classList.remove('active');
+      toggle.classList.remove('on');
+    }
+  }
+
+  // ============ FAIRE LE CHANGE ============
+  function openChangeModal() {
+    document.getElementById('changeChf').value = '';
+    document.getElementById('changeEur').value = '';
+    document.getElementById('changeDate').value = todayISO();
+    document.getElementById('changeRateInfo').style.display = 'none';
+    document.getElementById('changeModal').classList.add('open');
+  }
+
+  function closeChangeModal() {
+    document.getElementById('changeModal').classList.remove('open');
+  }
+
+  function updateChangeRate() {
+    const chf = parseFloat(document.getElementById('changeChf').value);
+    const eur = parseFloat(document.getElementById('changeEur').value);
+    const info = document.getElementById('changeRateInfo');
+    if (!isNaN(chf) && !isNaN(eur) && chf > 0 && eur > 0) {
+      const rate = eur / chf;
+      info.style.display = 'block';
+      document.getElementById('changeRateValue').textContent =
+        `1 CHF = ${rate.toFixed(4)} €`;
+    } else {
+      info.style.display = 'none';
+    }
+  }
+
+  function saveChange() {
+    const chf = parseFloat(document.getElementById('changeChf').value);
+    const eur = parseFloat(document.getElementById('changeEur').value);
+    const date = document.getElementById('changeDate').value || todayISO();
+
+    if (isNaN(chf) || isNaN(eur) || chf <= 0 || eur <= 0) {
+      alert('Renseigne le montant CHF et le montant EUR reçus.');
+      return;
+    }
+
+    const rate = eur / chf;
+    localStorage.setItem(K_LAST_RATE, String(rate));
+
+    // 1. Convertir toutes les opérations CHF non-converties à ce taux
+    let countConverted = 0;
+    entries.forEach(e => {
+      if (entryCur(e) === 'CHF' && typeof e.eurEquiv !== 'number') {
+        if (e.kind === 'emp' && e.empDir === 'emprunte') {
+          // "Je dois" : on convertit le trackedAmount
+          e.eurEquiv = (e.trackedAmount || 0) * rate;
+        } else {
+          e.eurEquiv = e.amount * rate;
+        }
+        countConverted++;
+      }
+    });
+    buskingEntries.forEach(b => {
+      if (b.cur === 'CHF' && typeof b.eurEquiv !== 'number') {
+        const cdAmt = (b.cdNb || 0) * (b.cdPriceAtTime || cdPrice);
+        const tot = (b.chapeau || 0) + cdAmt;
+        b.eurEquiv = tot * rate;
+      }
+    });
+
+    // 2. Créer la sortie CHF (cash qui sort)
+    entries.push({
+      id: Date.now(),
+      amount: -chf,
+      note: `Change CHF → EUR (taux ${rate.toFixed(4)})`,
+      date: date,
+      cur: 'CHF',
+      isChange: true,
+      eurEquiv: -eur
+    });
+
+    // 3. Créer la rentrée EUR (cash reçu)
+    entries.push({
+      id: Date.now() + 1,
+      amount: eur,
+      note: `Change CHF → EUR (taux ${rate.toFixed(4)})`,
+      date: date,
+      cur: 'EUR',
+      isChange: true
+    });
+
+    saveEntries();
+    saveBuskingData();
+    render();
+    if (document.getElementById('buskingView').classList.contains('open')) {
+      renderBusking();
+    }
+    closeChangeModal();
+    if (countConverted > 0) {
+      // Petit feedback discret après l'animation de fermeture
+      setTimeout(() => alert(`Change enregistré ✓\n${countConverted} opération${countConverted > 1 ? 's' : ''} CHF convertie${countConverted > 1 ? 's' : ''} au taux de ${rate.toFixed(4)}.`), 200);
+    }
+  }
+
   function updateEyeIcon() {
     const isHidden = localStorage.getItem(K_HIDE_TOTAL) === '1';
     const icon = document.getElementById('eyeIcon');
@@ -1352,20 +1623,53 @@
   }
 
   function render() {
-    const total = entries.reduce((s, e) => s + e.amount, 0);
-    const totalEl = document.getElementById('totalDisplay');
-    const isHidden = localStorage.getItem(K_HIDE_TOTAL) === '1';
+    // Calculer les deux totaux séparément
+    let totalEur = 0, totalChf = 0;
+    entries.forEach(e => {
+      const c = entryCur(e);
+      if (c === 'CHF') totalChf += e.amount;
+      else totalEur += e.amount;
+    });
 
-    if (isHidden) {
-      totalEl.classList.add('masked');
-      totalEl.innerHTML = '• • • • <span class="cur">€</span>';
+    const totalEurEl = document.getElementById('totalDisplay');
+    const totalChfEl = document.getElementById('totalChfDisplay');
+    const totalsRow = document.querySelector('.totals-row');
+    const chfCard = document.getElementById('totalChfCard');
+    const isHidden = localStorage.getItem(K_HIDE_TOTAL) === '1';
+    const swiss = isSwissMode();
+
+    // Afficher les deux compteurs si swiss mode ou s'il y a déjà des entrées CHF
+    const hasChf = swiss || entries.some(e => entryCur(e) === 'CHF');
+    if (hasChf) {
+      chfCard.style.display = 'block';
+      totalsRow.classList.add('dual');
     } else {
-      totalEl.classList.remove('masked');
-      const [intP, dec] = formatMoney(total).split(',');
-      totalEl.innerHTML = `${intP}<span class="cents">,${dec}</span><span class="cur">€</span>`;
+      chfCard.style.display = 'none';
+      totalsRow.classList.remove('dual');
+    }
+
+    // Compteur EUR
+    if (isHidden) {
+      totalEurEl.classList.add('masked');
+      totalEurEl.innerHTML = '• • • <span class="cur">€</span>';
+    } else {
+      totalEurEl.classList.remove('masked');
+      const [intP, dec] = formatMoney(totalEur).split(',');
+      totalEurEl.innerHTML = `${intP}<span class="cents">,${dec}</span><span class="cur">€</span>`;
+    }
+
+    // Compteur CHF
+    if (isHidden) {
+      totalChfEl.classList.add('masked');
+      totalChfEl.innerHTML = '• • • <span class="cur">CHF</span>';
+    } else {
+      totalChfEl.classList.remove('masked');
+      const [intP, dec] = formatMoney(totalChf).split(',');
+      totalChfEl.innerHTML = `${intP}<span class="cents">,${dec}</span><span class="cur">CHF</span>`;
     }
 
     updateEyeIcon();
+    updateSwissModeUI();
     renderDettesSummary();
 
     const list = document.getElementById('entriesList');
@@ -1381,13 +1685,15 @@
       // Cas spécial: "je dois" (amount=0, trackedAmount défini)
       const isJeDois = e.kind === 'emp' && e.empDir === 'emprunte';
       const displayAmount = isJeDois ? (e.trackedAmount || 0) : e.amount;
+      const cur = entryCur(e);
 
       let cls, sign;
       if (isJeDois) { cls = 'emp-neutral'; sign = ''; }
       else if (e.amount >= 0) { cls = 'plus'; sign = '+'; }
       else { cls = 'minus'; sign = '−'; }
 
-      const tag = e.kind === 'emp' ? '<span class="tag">Emprunt</span>' : '';
+      const empTag = e.kind === 'emp' ? '<span class="tag">Emprunt</span>' : '';
+      const chfTag = cur === 'CHF' ? '<span class="chf-tag">CHF</span>' : '';
       const defaultNote = e.kind === 'emp'
         ? (e.empDir === 'prete' ? 'Prêt'
            : e.empDir === 'rembourse-moi' ? 'Remboursement reçu'
@@ -1395,18 +1701,33 @@
            : 'Remboursement')
         : (e.amount >= 0 ? 'Rentrée' : 'Sortie');
 
+      const symbol = cur === 'CHF' ? 'CHF' : '€';
       let amtDisplay;
-      if (isHidden) amtDisplay = '••• €';
-      else if (isJeDois) amtDisplay = `(${formatMoney(Math.abs(displayAmount))} €)`;
-      else amtDisplay = `${sign}${formatMoney(Math.abs(displayAmount))} €`;
+      if (isHidden) amtDisplay = `••• ${symbol}`;
+      else if (isJeDois) amtDisplay = `(${formatMoney(Math.abs(displayAmount))} ${symbol})`;
+      else amtDisplay = `${sign}${formatMoney(Math.abs(displayAmount))} ${symbol}`;
+
+      // Équivalent EUR pour les entrées CHF converties
+      let eurEquivHtml = '';
+      if (cur === 'CHF' && typeof e.eurEquiv === 'number' && !isHidden) {
+        const equivAbs = Math.abs(isJeDois ? (e.trackedAmount * (e.eurEquiv / Math.abs(e.amount || 1))) : e.eurEquiv);
+        // Pour les entrées normales, e.eurEquiv contient déjà la valeur convertie
+        // On garde simplement le signe de l'entrée
+        const equivVal = isJeDois ? Math.abs(e.eurEquiv) : Math.abs(e.eurEquiv);
+        const equivSign = isJeDois ? '' : sign;
+        eurEquivHtml = `<span class="eur-equiv">→ ${equivSign}${formatMoney(equivVal)} €</span>`;
+      }
 
       return `
         <div class="entry ${cls}">
           <div class="left">
             <div class="date">${formatDate(e.date)}</div>
-            <div class="note">${tag}${e.note || defaultNote}</div>
+            <div class="note">${empTag}${chfTag}${e.note || defaultNote}</div>
           </div>
-          <div class="amt">${amtDisplay}</div>
+          <div class="amt-block">
+            <div class="amt">${amtDisplay}</div>
+            ${eurEquivHtml}
+          </div>
           <button class="del" onclick="deleteEntry(${e.id})">×</button>
         </div>
       `;
@@ -1414,34 +1735,31 @@
   }
 
   // ============ DETTES — calculs par personne ============
-  // Calcule le solde net pour chaque personne
-  // Solde positif = la personne te doit de l'argent
+  // Calcule le solde net pour chaque personne, séparé par devise
+  // Solde positif = la personne te doit
   // Solde négatif = tu dois à la personne
   function computeDettes() {
-    const balances = {}; // { nom: { balance: X, entries: [...] } }
+    const balances = {}; // { "nom|cur": { balance, entries, name, cur } }
 
     entries.forEach(e => {
       if (e.kind !== 'emp') return;
       const name = (e.note || '').trim() || '(sans nom)';
-      if (!balances[name]) balances[name] = { balance: 0, entries: [] };
+      const cur = entryCur(e);
+      const key = name + '|' + cur;
+      if (!balances[key]) balances[key] = { balance: 0, entries: [], name, cur };
 
-      // Pour "je dois" (emprunte), amount=0 mais trackedAmount contient le vrai montant
       const realAmount = (e.empDir === 'emprunte' && typeof e.trackedAmount === 'number')
         ? e.trackedAmount
         : Math.abs(e.amount);
 
-      // prete      : tu donnes → on te doit → +montant au solde
-      // rembourse-moi : on te rend → −montant du solde (la dette diminue)
-      // emprunte   : tu dois → −montant au solde (ta dette augmente)
-      // rembourse  : tu rends → +montant au solde (ta dette diminue)
       let delta = 0;
       if (e.empDir === 'prete') delta = realAmount;
       else if (e.empDir === 'rembourse-moi') delta = -realAmount;
       else if (e.empDir === 'emprunte') delta = -realAmount;
       else if (e.empDir === 'rembourse') delta = realAmount;
 
-      balances[name].balance += delta;
-      balances[name].entries.push(e);
+      balances[key].balance += delta;
+      balances[key].entries.push(e);
     });
 
     return balances;
@@ -1452,26 +1770,25 @@
     const balances = computeDettes();
     const isHidden = localStorage.getItem(K_HIDE_TOTAL) === '1';
 
-    // Only show non-settled balances
-    const active = Object.entries(balances).filter(([n, d]) => Math.abs(d.balance) > 0.005);
+    // Filtrer les soldes non nuls
+    const active = Object.values(balances).filter(d => Math.abs(d.balance) > 0.005);
 
     if (active.length === 0) {
       summary.style.display = 'none';
       return;
     }
 
-    // Sort: biggest absolute amount first
-    active.sort((a, b) => Math.abs(b[1].balance) - Math.abs(a[1].balance));
+    // Tri : plus gros montant absolu en premier
+    active.sort((a, b) => Math.abs(b.balance) - Math.abs(a.balance));
 
-    const maskAmt = '••• €';
-
-    const lines = active.slice(0, 4).map(([name, data]) => {
-      const b = data.balance;
-      const amt = isHidden ? maskAmt : `${formatMoney(Math.abs(b))} €`;
+    const lines = active.slice(0, 4).map(d => {
+      const b = d.balance;
+      const symbol = d.cur === 'CHF' ? 'CHF' : '€';
+      const amt = isHidden ? `••• ${symbol}` : `${formatMoney(Math.abs(b))} ${symbol}`;
       if (b > 0) {
-        return `<div class="line owed"><span class="name">${escapeHtml(name)} te doit</span><span class="amt">${amt}</span></div>`;
+        return `<div class="line owed"><span class="name">${escapeHtml(d.name)} te doit</span><span class="amt">${amt}</span></div>`;
       } else {
-        return `<div class="line owes"><span class="name">Tu dois à ${escapeHtml(name)}</span><span class="amt">${amt}</span></div>`;
+        return `<div class="line owes"><span class="name">Tu dois à ${escapeHtml(d.name)}</span><span class="amt">${amt}</span></div>`;
       }
     }).join('');
 
@@ -1522,11 +1839,11 @@
     const owes = [];    // tu dois
     const settled = []; // soldés
 
-    Object.entries(balances).forEach(([name, data]) => {
-      const b = data.balance;
-      if (b > 0.005) owed.push({ name, ...data });
-      else if (b < -0.005) owes.push({ name, ...data });
-      else settled.push({ name, ...data });
+    Object.values(balances).forEach(d => {
+      const b = d.balance;
+      if (b > 0.005) owed.push(d);
+      else if (b < -0.005) owes.push(d);
+      else settled.push(d);
     });
 
     // Tri par montant décroissant
@@ -1536,7 +1853,9 @@
     const renderPerson = (p, type) => {
       const b = p.balance;
       const absB = Math.abs(b);
-      const status = type === 'owed' ? `te doit` : type === 'owes' ? `tu dois` : 'soldé';
+      const symbol = p.cur === 'CHF' ? 'CHF' : '€';
+      const personKey = p.name + '|' + p.cur;
+      const status = type === 'owed' ? 'te doit' : type === 'owes' ? 'tu dois' : 'soldé';
       const sortedEntries = [...p.entries].sort((a, b) => {
         if (a.date !== b.date) return b.date.localeCompare(a.date);
         return b.id - a.id;
@@ -1549,37 +1868,43 @@
           'emprunte': 'Tu dois',
           'rembourse': 'Tu as remboursé'
         };
-        // Montant réel : pour "je dois", c'est trackedAmount
         const realAmt = (e.empDir === 'emprunte' && typeof e.trackedAmount === 'number')
           ? e.trackedAmount
           : Math.abs(e.amount);
-        // Affichage : "je dois" est neutre (aide-mémoire)
         const amtClass = e.empDir === 'emprunte' ? 'neutral'
                         : (e.empDir === 'prete' || e.empDir === 'rembourse') ? 'neg'
                         : 'pos';
         const sign = e.empDir === 'emprunte' ? ''
                     : (e.empDir === 'prete' || e.empDir === 'rembourse') ? '−'
                     : '+';
+        const eurEquiv = (p.cur === 'CHF' && typeof e.eurEquiv === 'number')
+          ? `<div style="font-size:11px;color:var(--ink-dim);font-style:italic">→ ${formatMoney(Math.abs(e.eurEquiv))} €</div>`
+          : '';
         return `
           <div class="person-entry">
             <div class="info">
               <div class="date-line">${formatDate(e.date)}</div>
               <div class="dir-label">${labels[e.empDir] || 'Mouvement'}</div>
             </div>
-            <div class="amt ${amtClass}">${sign}${formatMoney(realAmt)} €</div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end">
+              <div class="amt ${amtClass}">${sign}${formatMoney(realAmt)} ${symbol}</div>
+              ${eurEquiv}
+            </div>
             <button class="del" onclick="deleteEntry(${e.id}); event.stopPropagation();">×</button>
           </div>
         `;
       }).join('');
 
+      const balanceDisplay = type === 'settled' ? `0,00 ${symbol}` : `${formatMoney(absB)} ${symbol}`;
+
       return `
-        <div class="person-card ${type}" data-person="${escapeHtml(p.name)}">
-          <div class="person-header" onclick="togglePerson('${escapeHtml(p.name).replace(/'/g, "\\'")}')">
+        <div class="person-card ${type}" data-person-key="${escapeHtml(personKey)}">
+          <div class="person-header" onclick="togglePersonByKey('${escapeHtml(personKey).replace(/'/g, "\\'")}')">
             <div class="left">
-              <div class="name">${escapeHtml(p.name)}</div>
+              <div class="name">${escapeHtml(p.name)}${p.cur === 'CHF' ? ' <span class="chf-tag">CHF</span>' : ''}</div>
               <div class="status">${type === 'settled' ? 'Soldé' : status}</div>
             </div>
-            <div class="balance">${type === 'settled' ? '0,00' : formatMoney(absB)} €</div>
+            <div class="balance">${balanceDisplay}</div>
             <div class="chevron">▼</div>
           </div>
           <div class="person-body">${entriesHtml}</div>
@@ -1603,6 +1928,11 @@
     }
 
     wrap.innerHTML = `<div class="emprunts-sections">${html}</div>`;
+  }
+
+  function togglePersonByKey(key) {
+    const card = document.querySelector(`.person-card[data-person-key="${CSS.escape(key)}"]`);
+    if (card) card.classList.toggle('expanded');
   }
 
   function togglePerson(name) {
@@ -1663,17 +1993,18 @@
     }
     const note = document.getElementById('opNote').value.trim();
     const date = document.getElementById('opDate').value || todayISO();
+    const cur = isSwissMode() ? 'CHF' : 'EUR';
 
     let entry;
     if (currentOp === 'emp') {
       if (empDir === 'emprunte') {
         // "Je dois" : aide-mémoire, ne bouge pas le total
-        // On stocke amount=0 pour le total, et trackedAmount pour les dettes
         entry = {
           id: Date.now(),
           amount: 0,
           trackedAmount: amt,
-          note: note, date: date, kind: 'emp', empDir: empDir
+          note: note, date: date, kind: 'emp', empDir: empDir,
+          cur: cur
         };
       } else {
         // Je prête / On me rembourse / Je rembourse : vrais mouvements d'argent
@@ -1681,14 +2012,16 @@
         entry = {
           id: Date.now(),
           amount: isOutgoing ? -amt : amt,
-          note: note, date: date, kind: 'emp', empDir: empDir
+          note: note, date: date, kind: 'emp', empDir: empDir,
+          cur: cur
         };
       }
     } else {
       entry = {
         id: Date.now(),
         amount: currentOp === 'plus' ? amt : -amt,
-        note: note, date: date
+        note: note, date: date,
+        cur: cur
       };
     }
     entries.push(entry);
@@ -1745,32 +2078,76 @@
 
       const totalSess = sessions.reduce((s, b) => s + (b.sess || 0), 0);
       const totalCdNb = sessions.reduce((s, b) => s + (b.cdNb || 0), 0);
-      const totalChapeau = sessions.reduce((s, b) => s + (b.chapeau || 0), 0);
-      const realCdAmt = sessions.reduce((s, b) => s + ((b.cdNb || 0) * (b.cdPriceAtTime || cdPrice)), 0);
-      const grandTotal = totalChapeau + realCdAmt;
+
+      // Totaux séparés par devise
+      let totalEur = 0, totalChf = 0, totalChfConvertedEur = 0;
+      let chapeauEur = 0, chapeauChf = 0;
+      sessions.forEach(b => {
+        const c = b.cur === 'CHF' ? 'CHF' : 'EUR';
+        const cdAmt = (b.cdNb || 0) * (b.cdPriceAtTime || cdPrice);
+        const tot = (b.chapeau || 0) + cdAmt;
+        if (c === 'CHF') {
+          totalChf += tot;
+          chapeauChf += (b.chapeau || 0);
+          if (typeof b.eurEquiv === 'number') totalChfConvertedEur += b.eurEquiv;
+        } else {
+          totalEur += tot;
+          chapeauEur += (b.chapeau || 0);
+        }
+      });
 
       const expandedClass = isCurrent ? ' expanded' : '';
 
       const tableRows = sessions.length ? sessions.map(b => {
+        const c = b.cur === 'CHF' ? 'CHF' : 'EUR';
         const cdAmt = (b.cdNb || 0) * (b.cdPriceAtTime || cdPrice);
         const tot = (b.chapeau || 0) + cdAmt;
+        const symbol = c === 'CHF' ? 'CHF' : '€';
+        const totDisplay = `${formatMoney(tot)} ${symbol}`;
+        const eurEquivDisplay = (c === 'CHF' && typeof b.eurEquiv === 'number')
+          ? `<div style="font-size:11px;color:var(--ink-dim);font-style:italic;margin-top:2px">→ ${formatMoney(b.eurEquiv)} €</div>`
+          : '';
         return `
           <tr>
-            <td class="date">${formatDate(b.date)}</td>
+            <td class="date">${formatDate(b.date)}${c === 'CHF' ? '<br><span style="color:#d96a6a;font-size:9px;letter-spacing:0.15em">CHF</span>' : ''}</td>
             <td>${b.lieu || '—'}</td>
             <td class="num">${b.sess || 0}</td>
             <td class="num">${b.cdNb || 0}</td>
-            <td class="num total-cell">${formatMoney(tot)}</td>
+            <td class="num total-cell">${totDisplay}${eurEquivDisplay}</td>
             <td><button class="del" onclick="deleteBusking(${b.id}, event)">×</button></td>
           </tr>
         `;
       }).join('') : '';
 
+      // Header total : afficher la(les) devise(s)
+      let mtotalHtml = '';
+      if (totalEur > 0 && totalChf > 0) {
+        // Mois mixte
+        mtotalHtml = `<div style="font-size:16px;line-height:1.1">${formatMoney(totalEur)} €<br><span style="font-size:14px;color:#d96a6a">${formatMoney(totalChf)} CHF</span></div>`;
+      } else if (totalChf > 0) {
+        const eqPart = totalChfConvertedEur > 0
+          ? `<br><span style="font-size:11px;color:var(--ink-dim);font-style:italic">→ ${formatMoney(totalChfConvertedEur)} €</span>`
+          : '';
+        mtotalHtml = `<div style="line-height:1.1"><span style="color:#d96a6a">${formatMoney(totalChf)} CHF</span>${eqPart}</div>`;
+      } else {
+        mtotalHtml = `${formatMoney(totalEur)} €`;
+      }
+
+      // Stats footer : on affiche le chapeau dans la devise principale
+      let chapeauStat;
+      if (chapeauEur > 0 && chapeauChf > 0) {
+        chapeauStat = `${formatMoney(chapeauEur)}€ + ${formatMoney(chapeauChf)} CHF`;
+      } else if (chapeauChf > 0) {
+        chapeauStat = `${formatMoney(chapeauChf)} CHF`;
+      } else {
+        chapeauStat = `${formatMoney(chapeauEur)}€`;
+      }
+
       const bodyContent = sessions.length ? `
         <div class="month-stats">
           <div class="stat"><span class="v">${totalSess}</span><span class="k">Sessions</span></div>
           <div class="stat"><span class="v">${totalCdNb}</span><span class="k">CD vendus</span></div>
-          <div class="stat"><span class="v">${formatMoney(totalChapeau)}€</span><span class="k">Chapeau</span></div>
+          <div class="stat"><span class="v" style="font-size:14px">${chapeauStat}</span><span class="k">Chapeau</span></div>
         </div>
         <div class="table-wrap">
           <table>
@@ -1792,7 +2169,7 @@
               <div class="name">${monthLabel(k)}${isCurrent ? ' · en cours' : ''}</div>
               <div class="meta">${sessions.length} session${sessions.length > 1 ? 's' : ''}</div>
             </div>
-            <div class="mtotal">${formatMoney(grandTotal)} €</div>
+            <div class="mtotal">${mtotalHtml}</div>
             <div class="chevron">▼</div>
           </div>
           <div class="month-body">${bodyContent}</div>
@@ -1843,11 +2220,14 @@
       return;
     }
 
+    const cur = isSwissMode() ? 'CHF' : 'EUR';
+
     const b = {
       id: Date.now(),
       date: document.getElementById('bDate').value || todayISO(),
       lieu: document.getElementById('bLieu').value.trim(),
-      sess: sess, chapeau: chap, cdNb: cdNb, cdPriceAtTime: cdPrice
+      sess: sess, chapeau: chap, cdNb: cdNb, cdPriceAtTime: cdPrice,
+      cur: cur
     };
 
     buskingEntries.push(b);
@@ -1860,7 +2240,8 @@
         amount: total,
         note: `Busking${b.lieu ? ' · ' + b.lieu : ''}`,
         date: b.date,
-        buskingRef: b.id
+        buskingRef: b.id,
+        cur: cur
       });
       saveEntries();
     }
@@ -1984,7 +2365,7 @@
   }
 
   // ============ BACKDROP CLICKS ============
-  ['opModal', 'buskingModal', 'cdModal', 'settingsModal'].forEach(id => {
+  ['opModal', 'buskingModal', 'cdModal', 'settingsModal', 'changeModal'].forEach(id => {
     document.getElementById(id).addEventListener('click', e => {
       if (e.target.id === id) e.target.classList.remove('open');
     });
