@@ -1122,6 +1122,14 @@
     const [y, m, d] = iso.split('-');
     return `${d}/${m}/${y.slice(2)}`;
   }
+  function formatDateWithDay(iso) {
+    if (!iso) return '';
+    const [y, m, d] = iso.split('-');
+    const date = new Date(parseInt(y), parseInt(m) - 1, parseInt(d));
+    const days = ['dim.', 'lun.', 'mar.', 'mer.', 'jeu.', 'ven.', 'sam.'];
+    const dayLabel = days[date.getDay()];
+    return `${dayLabel} ${d}/${m}/${y.slice(2)}`;
+  }
   function monthKey(iso) { return iso ? iso.slice(0, 7) : ''; }
   function monthLabel(key) {
     if (!key) return '';
@@ -2109,7 +2117,7 @@
           : '';
         return `
           <tr>
-            <td class="date">${formatDate(b.date)}${c === 'CHF' ? '<br><span style="color:#d96a6a;font-size:9px;letter-spacing:0.15em">CHF</span>' : ''}</td>
+            <td class="date">${formatDateWithDay(b.date)}${c === 'CHF' ? '<br><span style="color:#d96a6a;font-size:9px;letter-spacing:0.15em">CHF</span>' : ''}</td>
             <td>${b.lieu || '—'}</td>
             <td class="num">${b.sess || 0}</td>
             <td class="num">${b.cdNb || 0}</td>
