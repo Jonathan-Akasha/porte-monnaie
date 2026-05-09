@@ -830,6 +830,23 @@
   }
   .busking-form-grid .full { grid-column: 1 / -1; }
 
+  .calc-preview {
+    margin-top: 6px;
+    padding: 6px 10px;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 14px;
+    color: var(--gold);
+    background: rgba(212, 168, 87, 0.06);
+    border-left: 2px solid var(--gold-dim);
+    border-radius: 2px;
+  }
+  .calc-preview.error {
+    color: var(--minus);
+    background: rgba(212, 144, 144, 0.05);
+    border-left-color: var(--minus);
+  }
+
   .cd-summary {
     margin-top: 14px; padding: 12px;
     background: rgba(212, 168, 87, 0.06);
@@ -1004,8 +1021,9 @@
         <input type="number" id="bSess" step="1" min="0" inputmode="numeric" placeholder="0" oninput="updateCdSummary()">
       </div>
       <div>
-        <label>Chapeau (€)</label>
-        <input type="number" id="bChapeau" step="0.01" min="0" inputmode="decimal" placeholder="0.00" oninput="updateCdSummary()">
+        <label>Chapeau</label>
+        <input type="text" id="bChapeau" inputmode="text" placeholder="0  ou  20+15+5" oninput="updateChapeauCalc()">
+        <div id="bChapeauPreview" class="calc-preview" style="display:none"></div>
       </div>
       <div class="full">
         <label>Nombre de CD vendus</label>
@@ -2198,6 +2216,7 @@
     document.getElementById('bChapeau').value = '';
     document.getElementById('bCdNb').value = '';
     document.getElementById('cdSummary').style.display = 'none';
+    document.getElementById('bChapeauPreview').style.display = 'none';
     document.getElementById('buskingModal').classList.add('open');
   }
 
@@ -2205,21 +2224,127 @@
     document.getElementById('buskingModal').classList.remove('open');
   }
 
+  // ============ CALCULATRICE CHAPEAU ============
+  // Évalue une expression simple : nombres, +, -, *, /, parenthèses, virgule décimale
+  // Sans utiliser eval(), donc safe.
+  function evalCalc(expr) {
+    if (!expr || !expr.trim()) return { value: 0, valid: true, empty: true };
+    // Normaliser : virgule -> point, supprimer espaces et symboles € CHF
+    let s = expr.replace(/,/g, '.').replace(/[€\s]|CHF/gi, '');
+    // N'autoriser que chiffres, points, opérateurs, parenthèses
+    if (!/^[\d.+\-*/() ]+$/.test(s)) {
+      return { value: 0, valid: false, error: 'Caractère invalide' };
+    }
+    // Parser récursif descendant simple
+    let i = 0;
+    function peek() { return s[i]; }
+    function next() { return s[i++]; }
+    function eatWS() { while (s[i] === ' ') i++; }
+
+    function parseNumber() {
+      eatWS();
+      let start = i;
+      while (i < s.length && /[\d.]/.test(s[i])) i++;
+      if (start === i) throw new Error('nombre attendu');
+      const n = parseFloat(s.substring(start, i));
+      if (isNaN(n)) throw new Error('nombre invalide');
+      return n;
+    }
+    function parseFactor() {
+      eatWS();
+      if (peek() === '(') {
+        next();
+        const v = parseExpr();
+        eatWS();
+        if (peek() !== ')') throw new Error('parenthèse fermante');
+        next();
+        return v;
+      }
+      if (peek() === '-') { next(); return -parseFactor(); }
+      if (peek() === '+') { next(); return parseFactor(); }
+      return parseNumber();
+    }
+    function parseTerm() {
+      let v = parseFactor();
+      eatWS();
+      while (peek() === '*' || peek() === '/') {
+        const op = next();
+        const r = parseFactor();
+        v = op === '*' ? v * r : v / r;
+        eatWS();
+      }
+      return v;
+    }
+    function parseExpr() {
+      let v = parseTerm();
+      eatWS();
+      while (peek() === '+' || peek() === '-') {
+        const op = next();
+        const r = parseTerm();
+        v = op === '+' ? v + r : v - r;
+        eatWS();
+      }
+      return v;
+    }
+    try {
+      const v = parseExpr();
+      eatWS();
+      if (i < s.length) {
+        return { value: 0, valid: false, error: 'fin inattendue', incomplete: true };
+      }
+      if (!isFinite(v)) return { value: 0, valid: false, error: 'résultat invalide' };
+      return { value: v, valid: true };
+    } catch (e) {
+      return { value: 0, valid: false, error: e.message, incomplete: true };
+    }
+  }
+
+  function parseChapeau() {
+    const raw = document.getElementById('bChapeau').value;
+    const r = evalCalc(raw);
+    if (r.valid && !r.empty) return r.value;
+    return 0;
+  }
+
+  function updateChapeauCalc() {
+    const raw = document.getElementById('bChapeau').value;
+    const preview = document.getElementById('bChapeauPreview');
+    const r = evalCalc(raw);
+    // N'afficher le preview QUE si l'expression contient un opérateur ou des parenthèses
+    const hasOp = /[+\-*/()]/.test(raw.replace(/^-/, '')); // ignorer un éventuel signe initial
+    if (!raw.trim() || (r.valid && !hasOp)) {
+      preview.style.display = 'none';
+    } else if (r.valid) {
+      preview.style.display = 'block';
+      preview.classList.remove('error');
+      preview.textContent = `= ${formatMoney(r.value)}`;
+    } else if (r.incomplete) {
+      // Expression en cours de saisie, ne rien afficher de rouge
+      preview.style.display = 'none';
+    } else {
+      preview.style.display = 'block';
+      preview.classList.add('error');
+      preview.textContent = `⚠ ${r.error}`;
+    }
+    updateCdSummary();
+  }
+
   function updateCdSummary() {
-    const chap = parseFloat(document.getElementById('bChapeau').value) || 0;
+    const chap = parseChapeau();
     const cdNb = parseInt(document.getElementById('bCdNb').value) || 0;
     const total = chap + (cdNb * cdPrice);
     const summary = document.getElementById('cdSummary');
+    const symbol = isSwissMode() ? 'CHF' : '€';
     if (total > 0) {
       summary.style.display = 'block';
-      document.getElementById('cdSummaryVal').textContent = formatMoney(total) + ' €';
+      document.getElementById('cdSummaryVal').textContent = formatMoney(total) + ' ' + symbol;
     } else {
       summary.style.display = 'none';
     }
   }
 
   function saveBusking() {
-    const chap = parseFloat(document.getElementById('bChapeau').value) || 0;
+    const chap = parseChapeau();
     const cdNb = parseInt(document.getElementById('bCdNb').value) || 0;
     const sess = parseInt(document.getElementById('bSess').value) || 0;
 
